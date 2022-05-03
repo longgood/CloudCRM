@@ -1,0 +1,73 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} 客戶資料報表 {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+	
+    <div class="py-4">
+        
+    </div>
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card bg-yellow-100 border-0 shadow">
+                <div class="card-header d-sm-flex flex-row align-items-center flex-0">
+
+
+
+
+                </div>
+                <div class="card-body p-2">
+                    <div class="row">
+					<p>使用活動紀錄<p>
+					<div class="row">
+
+						<div class="col"><p>機構代碼<p></div>
+						<div class="col"><p>客戶代碼<p></div>
+						<div class="col"><p>起始時間<p></div>
+						<div class="col"><p>下次拜會時間<p></div>
+						<div class="col"><p>拜訪類別<p></div>
+						<div class="col"><p>敘述<p></div>
+						<div class="col"><p>下次重點<p></div>
+					</div>
+					{% for act in activity %}
+					<div class="row">
+
+						<div class="col"><p>{{ act.facilityid }}<p></div>
+						<div class="col"><p>{{ act.customerList }}<p></div>
+						<div class="col"><p>{{act.starttime}}<p></div>
+						<div class="col"><p>{{act.nexttime}}<p></div>
+						<div class="col"><p>{{act.type}}<p></div>
+						<div class="col"><p>{{act.description}}<p></div>
+						<div class="col"><p>{{act.nextstep}}<p></div>
+					</div>
+					{% endfor %}
+					<p>客戶名稱<p>
+					<div class="row">
+						<div class="col"><p>代碼<p></div>
+						<div class="col"><p>姓名<p></div>
+						<div class="col"><p>頭銜<p></div>
+					</div>
+					{% for cust in customer %}
+					<div class="row">
+						<div class="col"><p>{{ cust.id }}<p></div>
+						<div class="col"><p>{{ cust.name }}<p></div>
+						<div class="col"><p>{{cust.title}}<p></div>
+					</div>
+					{% endfor %}
+					
+					
+					</div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+   
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

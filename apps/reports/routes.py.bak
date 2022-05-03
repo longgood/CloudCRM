@@ -29,9 +29,11 @@ def report_general():
 
     usermanager=current_user
     acts=data.get_activity()
-    fac=data.get_facility()
-    cust=data.get_customer()
-    return render_template('report/report_general.html',activity=acts,facility=fac,customer=cust)
+    for a in acts:
+        print("bb:",a)
+    print("Report General",current_user)
+
+    return render_template('report/report_general.html',activity=acts)
 
 @blueprint.route('/report_history')
 @login_required

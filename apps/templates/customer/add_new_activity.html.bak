@@ -179,7 +179,7 @@
 								
 								
 								<h5>花費時間</h5>
-								<select name=minutesdelta style="width:300px;" >
+								<select name=minutesdelta	style="width:300px;" >
 
 									<option>十分鐘</option>
 									<option>半小時</option>

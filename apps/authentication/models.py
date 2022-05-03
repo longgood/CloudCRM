@@ -88,12 +88,12 @@ class TActivity(db.Model):
     #我們這邊誰發起或是負責這項活動。
     ownerid=db.Column(db.String(64))
     #這次有哪些客戶參與
-    
     facilityid=db.Column(db.String(64))
     customerList=db.Column(db.String(255))
     starttime=db.Column(db.DateTime)
     endtime=db.Column(db.DateTime)
-    #甚麼樣類型的拜訪，0寫信，1.LINE，2.十分鐘內的通話，3.30分鐘的通話，4.會面半小時，5.面對面三人以上會議
+    nexttime=db.Column(db.DateTime)
+    #甚麼樣類型的拜訪，0寫信，1.LINE(訊息)，2.十分鐘內的通話，3.30分鐘的通話，4.會面，5.面對面三人以上會議
     
     type=db.Column(db.Integer)
    

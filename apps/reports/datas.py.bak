@@ -14,9 +14,7 @@ class TData():
     def get_facility(self):
         result=TFacility.query.all()
         return result
-    def get_customer(self):
-        result=TCustomer.query.all()
-        return result    
+    
 """
     def __init__(self):
         self.current_patientid="50E085F6B468000001"

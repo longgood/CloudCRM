@@ -2,7 +2,14 @@
 更改為CRM管理系統-20220412
 ---
 新增類別TCustomer, TFacility, TActivity, TProject
-
+-----------------------
+20220502
+1.新增TActivity--完善他
+	a.每次新增TFacility, TCustomer如果需要的話--->done
+	b.列出現有TActivity, TFacility, TCustomer的所有資訊
+	
+	c.TActivity中，還有包括type(類型) ，以及花費的時間等，需要跟著連動-->OK
+	d.加入ownerid
 
 
 -----------------------

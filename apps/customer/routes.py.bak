@@ -23,7 +23,7 @@ data=TCustomerDataFake()
 
 def get_id(num):
     pre=random.randint(10,99)
-    id=pre+num*100+1000000000
+    id=pre+num*10000000
     return id
 @blueprint.route('/customer_activity_test')
 def customer_activity_test():

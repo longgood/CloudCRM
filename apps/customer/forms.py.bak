@@ -26,7 +26,6 @@ class CreateActivityForm():
         self.timedelta="哇哈哈"
         self.minutesdelta="測試"
         
-        
         if 'facility_name' in value:
             self.facility_name=value['facility_name']
         if 'customer_name' in value:
