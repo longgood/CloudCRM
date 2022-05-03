@@ -1,0 +1,68 @@
+---
+更改為CRM管理系統-20220412
+---
+新增類別TCustomer, TFacility, TActivity, TProject
+
+
+
+-----------------------
+20220404
+目標
+1.分層管理。
+(suedu建立)
+	a.新增管理者
+	b.從內建的管理欄位新增使用者--->需要firebase, and local db.
+	c.建立TFacility(龍骨王手動)
+2.分層讀取資料庫:
+	---整合firebase功能到db內。
+	a.上級管理者能讀取下層管理者的內容及其管理內容
+	b.建立使用者
+	c.上傳firebase
+
+action:
+	a.找出firebase建立的基礎碼-->完成，並新增輸入管理者ID，取得使用者ID。
+	b.手動由python建立管理者及其系統。包括TManager, TFacility，與其下屬管理關係，與管理患者。--->完成，建立在新的firebase DB, named gaitbest
+	c.寫出DB搜尋。根據關聯式資料庫。顯示能夠查看的使用者資料---完成
+	d.頂級管理者可以看全部的資料，以及統計資料喔!!--->需要加入flask中。
+	
+	
+	---4/5-----
+	A.決定firebase為主或是serverlocaldb為主。
+	B.server localdb建置好之後，需要上傳到firebase.
+	C.手動建立localdb的TManager, TFacility,TActivity, TUserInfo
+	D.固定由server localdb上傳到firebasedb(每次活動觸發更新或是檢查)。
+	只有TActivity會更在Firebase上更新而已，故需要下載。
+	其他的都只是上傳到firebase。
+	
+	功能建置
+	fake data for serverlocaldb
+		 still using user login, but buil fake datas, including TManager, TActivity, TFacility, TUserInfo
+	a.整合TFirebase到DB系統內。
+	b.將TUserInfo, TManager至少整併到localserver的login檢查內。
+	c.建置本機端server localdb 人為的資料，包括TFacility(upload),TUserInfo(upload), TManager(upload), TActivity(download)方式，
+	d.
+	
+------------------------------------
+1.需要作出能將資料從py 傳到 jinja網頁，
+報表的個人-->目前可以將python內的資料傳到特定網頁。看完了框架。
+2.傳入目前使用者的資訊
+	將flask login, current_user
+導入之後，就可以了耶。
+3.依照current_user(登入者)的權限，來決定(2/9)
+-0.先不提供登入
+-a.可以看到的病人列表
+-b.直接對應該病人的資料。
+
+
+----
+移植過程有幾個地方的問題還沒有解決。
+1.GetLatestDay, 這邊沒有真的找到最近的一天，order_by還不會使用
+2.Day_Activity, 這邊取得的資料不正確，沒有filter_by userid, 也是因為還不會使用。
+Class呼叫順序
+routes-->datas--->ClassIADL
+先寫一個類別，專門負責處理資料庫。
+
+#--奇怪的知識，用func預設值作為sqlalchemy, filter_by(value)會出問題。真的是很靠北。--solved
+---
+套用IADL範本到網站
+

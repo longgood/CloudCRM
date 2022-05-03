@@ -1,0 +1,8 @@
+from apps.reports.models import TManager
+from apps.reports.models import RDatabase as rdb
+class fake():
+	def set_tmanagers(self):
+        print(rdb.name)
+	def get_test(self):
+        self.set_tmanagers()
+        return "test data here"

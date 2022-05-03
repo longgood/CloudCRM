@@ -1,0 +1,27 @@
+virtualenv env &&.\env\Scripts\activate
+
+pip3 install -r requirements.txt
+set FLASK_ENV=development 
+set FLASK_DEBUG =True
+set FLASK_APP=run.py
+
+$ # 設定為開發模式Debug，這個很重要啊啊
+
+
+flask run --debugger --host=0.0.0.0 --port=5000
+
+
+更多要參考readme.md這個檔案
+用py run.py也可以，會直接確認有debug模式。
+--
+bioanalysis:
+用來放入IADL, Gait, 以及HGG等模組。
+使用上的差別在於資料庫的載入。僅需要確認
+ClassIADL一開始的標籤isFlaskWeb是否為真。
+ClassDB可能要直接抽換。
+
+
+--
+發布須知:
+https://itcosmos.co/create-website-on-pythonanywhere/
+

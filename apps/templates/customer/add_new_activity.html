@@ -1,0 +1,241 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+{% extends "layouts/base.html" %}
+
+
+{% block title %} 新增今日商務活動 {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+
+
+    <style type="text/css">
+        #input-content{
+            width: 350px;
+            height: 200px;
+            margin:100px auto 20px;
+        }
+
+        #input-content input{
+            width: 100%;
+            height: 50px;
+            text-indent: 15px;
+            font-size: 18px;
+            outline: none;
+            border:2px solid #333;
+            border-radius: 100px;
+        }
+        
+        /*输入框底部黄色背景去除*/
+        input:-webkit-autofill, 
+         textarea:-webkit-autofill, 
+         select:-webkit-autofill { 
+               -webkit-box-shadow: 0 0 0 1000px white inset; 
+        }
+         input[type=text]:focus, input[type=password]:focus, textarea:focus {
+              -webkit-box-shadow: 0 0 0 1000px white inset; 
+        }
+    </style>
+	<script>
+	function post(url, params) {
+		var temp = document.createElement("form");
+		temp.action = url;
+		temp.method = "post";
+		temp.style.display = "none";
+		for (var x in params) {
+		var opt = document.createElement("textarea");
+		opt.name = x;
+		opt.value = params[x];
+		temp.appendChild(opt);
+		}
+		document.body.appendChild(temp);
+		temp.submit();
+		return temp;
+		}
+	</script>
+    <div class="py-4">
+        <div class="dropdown">
+			<button class="btn btn-gray-800 d-inline-flex align-items-center me-2 dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <svg class="icon icon-xs me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                沒事
+            </button>
+            <div class="dropdown-menu dashboard-dropdown dropdown-menu-start mt-2 py-1">
+				{% for user in patientlist %}
+				<a class="dropdown-item d-flex align-items-center" href="reports?username=raychen">
+                    {{user}}
+                </a>
+				{% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card bg-yellow-100 border-0 shadow">
+
+								<div class="card-body p-2">
+								<div class="text-center text-md-center mb-4 mt-md-0">
+                                <h1 class="mb-0 h3">
+                                    新增今日商務活動
+                                </h1>
+                                <br />
+                                <p>
+                                    {% if msg %}
+                                        {{ msg | safe }}
+                                    {% else %}
+                                        愛客戶
+                                    {% endif %}                                     
+                                </p> 
+								</div>
+								<form method="post" action="" class="mt-4">
+								<h5>機構/公司</h5>
+								<input type="text" name=facility_name id="facility_name" style="width:300px;" onkeyup="searchkey_event(this.value,this.id,event)" placeholder="醫院機構" value={{form.facility_name}}>
+								<select multiple="multiple" id="sel" onchange="search_onchange_facility('facility_name')" style="width:300px;display:none" >
+								</select>
+								
+								<h5>客戶姓名</h5>
+								<input type="text" name=customer_name id="customer_name" style="width:300px;" placeholder="陳大成" value={{form.customer_name}} >職稱
+								
+								<input type="text" name=customer_title id="customer_title" style="width:150px;" placeholder="復健部主任" value={{form.customer_title}} >
+								
+								<script>
+									<!--
+									https://www.itread01.com/p/1336190.html
+									-->
+									function searchkey_event(keyword,obj_id,event){
+										//定義全域性變數
+										var keyword = $("#"+obj_id).val();
+										var sel = document.getElementById("sel");
+										$.get(
+												"customer_search",//url
+												"keyword="+ keyword,//傳送的資料
+												function(data){//獲取響應回來的資料
+													document.getElementById("sel").innerHTML="";
+													var arr = new Array;
+													var arr = data.split("#");//將響應回來的資料按#拆分成陣列			
+													
+													for(var i=0;i<arr.length;i++){//迴圈每一個滿足條件的記錄
+														//將當前迴圈滿足條件的商品名稱生成一個下拉的選項
+														sel.options[i]=new Option(arr[i],i);
+													}
+													//判斷是否有滿足條件的商品
+													if(data.length>0){
+														sel.style.display='block';
+													}else{
+														sel.style.display='none';
+													}
+													//當用戶按下上下鍵時獲取相應的值
+													if(event.keyCode==40){
+														sel.focus();
+													}	
+												},
+												//傳送資料型別
+												"text"
+										);
+									}
+								 function search_onchange_facility(obj_id){
+									//輸入enter,獲取輸入框內容焦點
+									$("#sel").keypress(function(){
+											$("#"+obj_id).focus();
+											$("#sel").css("display","none");
+									});
+									 //雙擊,獲取輸入框內容焦點
+									 $("#sel").dblclick(function(){
+										 $("#"+obj_id).focus();
+										 $("#sel").css("display","none");
+									 });
+									 //將選中的下拉列表中的內容新增到輸入框中
+									$("#"+obj_id).val($("option:selected").html());
+									
+									} 
+									</script>
+								
+								
+								
+								
+								<h5>開始時間</h5>
+								<input type="datetime-local" id="start_time" style="width:300px;" 
+								name="starttime"  value="2022-04-13T00:00"
+								min="2021-06-07T00:00" max="2023-06-14T00:00">
+							
+								<script>
+									let today = new Date().toISOString().slice(0, 16)
+									var date = new Date();
+									
+									
+									let theDay = new Date(); // 建立時間物件
+									let changeDay = 60; // 設定要往前或往後幾天
+									let timeStamp = theDay.setDate(theDay.getDate() + changeDay); // theDay.getDate() 是用來取得今天是幾號
+									
+									//document.getElementById("start_time").value = theDay.setDate(theDay.getDate());
+									document.getElementById("start_time").value = today;
+									
+									document.getElementById("start_time").max = theDay.setDate(theDay.getDate()+10);
+									
+								</script>
+							
+								
+								
+								
+								<h5>花費時間</h5>
+								<select name=endtime	style="width:300px;" >
+
+									<option>十分鐘</option>
+									<option>半小時</option>
+									<option>一小時</option>
+									<option>兩小時</option>
+									<option>四小時</option>
+									<option>八小時</option>
+								</select>
+							
+								<h5>聯繫方式</h5>
+								<select name=type style="width:300px;" >
+									<option>寫信</option>
+									<option>LINE(訊息)</option>
+									<option>線上通話</option>
+									<option>會面</option>
+									<option>面對面三人以上會議</option>
+								</select>
+								
+								<h5>工作內容描述</h5>
+								<textarea name=description id="description_task" style="width:300px;height:100px;" placeholder="此次工作重點"></textarea>
+								
+								<h5>下次拜訪重點</h5>
+								<textarea name=nextstep id="next_task" style="width:300px;height:100px;" placeholder="敘述下次聯繫的重點"></textarea>
+													
+
+								<h5>下次拜訪時間</h5>
+								<select style="width:300px;" >
+									<option>兩天後</option>
+									<option>一周後</option>
+									<option>兩周後</option>
+									<option>一個月後</option>
+									<option>一季(三個月)</option>
+								</select>
+
+	
+								
+								
+								</div>
+
+								
+								
+								<div class="d-grid">
+                                    <button type="submit" name="register" class="btn btn-gray-300">新增</button>
+                                </div>
+								</form>
+					
+					
+					
+                </div>
+            </div>
+        </div>
+        
+       
+    </div>
+  
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

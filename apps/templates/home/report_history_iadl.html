@@ -1,0 +1,712 @@
+{% extends "layouts/base.html" %}
+{% block title %} 歷史報表 {% endblock %} 
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+{% endblock stylesheets %}
+{% block javascripts %}
+	<script src="/static/assets/js/plotly-2.4.2.min.js"></script>
+	<script src="/static/assets/js/ray_ui.js"></script>
+{% endblock javascripts %}
+
+{% block navigator %}{% include 'includes/navigation_user.html' %}{%endblock navigator%}
+{% block content %}
+    <div class="container">
+    <!--使用者資料--> 
+	<div class="Table-UserInfo">
+	<hr>
+      <div class="row">
+
+        <h1>{{patientInfos['realname']}}IADL歷史資料</h1>
+        <div class="col-6">
+        </div>
+      </div>
+	 	
+	  <hr>
+      <h2><strong>總覽</strong></h2>
+      <hr>
+      <div class="row">
+        <div class="col-md-8 col-sm-12">
+          <div class="media">
+            <div class="media-body">
+              <h5 class="mt-0">個人資料</h5>
+        		<div class="col">      
+					<div class="userinfo">
+					<div class="row">
+            			<div class="col-6">
+              				<div>
+							<div class="row">
+									<div class="col-6"><h6><strong>身高</strong></h6></div>
+								    <div class="col-6">{{patientInfos['height']}}</div>
+						    </div>
+							</div>
+							<div>
+							<div class="row">
+									<div class="col-6"><h6><strong>體重</strong></h6></div>
+								    <div class="col-6">{{patientInfos['weight']}}</div>
+						    </div>
+							</div>
+							<div>
+							<div class="row">
+									<div class="col-6"><h6><strong>性別</strong></h6></div>
+								    <div class="col-6">{{patientInfos['gender']}}</div>
+						    </div>
+							</div>
+							<div>
+							<div class="row">
+									<div class="col-6"><h6><strong>年齡</strong></h6></div>
+								    <div class="col-6">{{patientInfos['birthday']}}</div>
+						    </div>
+							</div>
+							<div>
+							<div class="row">
+									<div class="col-6"><h6><strong>連絡電話</strong></h6></div>
+								    <div class="col-6">{{patientInfos['phone']}}</div>
+						    </div>
+							</div>
+            			</div>
+						<div class="col-6">
+						  	<div>
+							<div class="row">
+									<div class="col-6"><h6><strong>病歷號</strong></h6></div>
+								    <div class="col-6">{{patientInfos['patientid']}}</div>
+						    </div>
+							</div>
+							<div>
+							<div class="row">
+									<div class="col-6"><h6><strong>身分證字號</strong></h6></div>
+								    <div class="col-6">{{patientInfos['nationalid']}}</div>
+						    </div>
+							</div>
+							<div>
+							<div class="row">
+									<div class="col-6"><h6><strong>疾病類型</strong></h6></div>
+								    <div class="col-6">{{patientInfos['disease']}} </div>
+						    </div>
+							</div>
+							<div>
+							<div class="row">
+									<div class="col-6"><h6><strong>嚴重程度</strong></h6></div>
+								    <div class="col-6"> {{patientInfos['status']}}</div>
+						    </div>
+							</div>
+							<div>
+							<div class="row">
+									<div class="col-6"><h6><strong>檢測日期</strong></h6></div>
+								    <div class="col-6">{{patientInfos['registertime']}}</div>
+						    </div>
+							</div>
+							</div>
+          				</div>	
+						
+						
+						
+
+					</div>     
+				</div>
+            </div>
+          </div>
+        </div>
+		  
+        <div class="col">
+        </div>
+      </div>
+     
+		
+	<!--總覽端結束--> 	
+	</div>
+	<!--訓練資訊圖表-->
+    <div class="Chart-Day-General">
+	 <hr>
+      <h2><strong>近兩周訓練歷史資訊綜整圖表</strong></h2>
+      <hr><div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>訓練正確度</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_score" style="vertical-align:middle;width:90%;height:500px;"></div>
+			
+			<script>
+				disp_radar('plotly_day_score',{{SingleScoreData}},{{program_table|tojson|tojson}})
+			</script>
+        </div>
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>訓練次數百分比</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"><span aria-hidden="true"></span></h5>
+            </div>
+          </div>
+		  <div><h4></h4></div>		  <div><h4></h4></div>
+          <div id="plotly_day_num" style="vertical-align:middle;width:90%;height:500px;"></div>
+			
+			<script>
+				disp_pie('plotly_day_num',{{SingleNumData}},{{program_table|tojson}})
+			</script>
+        </div>
+      </div>
+	  <!--近兩周訓練資訊圖表間格線-->
+	  <hr><div class="row">
+	      <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>訓練(平均)花費時間</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"><span aria-hidden="true"></span></h5>
+            </div>
+          </div>
+		  <div><h4></h4></div>		  <div><h4></h4></div>
+          <div id="plotly_day_meanduration" style="vertical-align:middle;width:90%;height:500px;"></div>
+			<script>
+				disp_radar('plotly_day_meanduration',{{SingleMeanDurationData}},{{program_table|tojson}})
+			</script>
+        </div>
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>訓練(總)花費時間百分比</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+			<div id="plotly_day_duration" style="vertical-align:middle;width:90%;height:500px;"></div>
+			<script>
+				disp_pie('plotly_day_duration',{{SingleDurationData}},{{program_table|tojson}})
+			</script>
+        </div>
+
+      </div>
+	  <!--近兩周訓練資訊圖表間格線，只有一組-->
+	  <hr><div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>訓練(平均)反應時間</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_response" style="vertical-align:middle;width:90%;height:500px;"></div>
+			<script>
+				disp_radar('plotly_day_response',{{SingleResponseData}},{{program_table|tojson}})
+			</script>
+        </div>
+      </div>
+	  <!--結束當日訓練資訊圖表-->
+      </div>
+     <!--===當日訓練正確率與反應時間表===-->
+	 <div class="Table-day-correct-response">
+	  <hr>
+      <h2><strong>正確率與平均反應時間表</strong></h2>
+      
+	  <hr><div class="col">      
+					<div class="genetal_information_table">
+					
+            			<div class="col-12">
+              				<div class="row">
+									<div class="col-1"><h6>序</h6></div>
+								    <div class="col-2"><h6>訓練名稱</h6></div>
+									<div class="col-2"><h6>平均數據(正確率)</h6></div>
+									<div class="col-2"><h6>平均反應時間(秒)</h6></div>
+									<div class="col-2"><h6>期間累計練習時間(秒)</h6></div>
+									<div class="col-3"><h6>能力指標</h6></div>
+									
+						    </div>
+							<hr>
+							{% for info in SingleTableInfoData %}
+							<div>
+							<div class="row">
+									<div class="col-1"><h6><strong>{{loop.index}}</strong></h6></div>
+								    <div class="col-2"><h6>{{info.name}}</h6></div>
+									<div class="col-2"><h6>{{info.score}}</h6></div>
+									<div class="col-2"><h6>{{info.response}}</h6></div>
+									<div class="col-2"><h6>{{info.totaltime}}</h6></div>
+									<div class="col-3"></div>
+						    </div>
+							</div>
+							{% endfor %}
+            			</div>
+						
+          			</div>     
+		</div>
+		<hr>
+       <h2><strong>進步列表</strong></h2>
+		<hr><div class="col">      
+					<div class="progress_information_table">
+					
+            			<div class="col-12">
+              				<div class="row">
+									<div class="col-1"><h6>序</h6></div>
+								    <div class="col-2"><h6>訓練名稱</h6></div>
+									<div class="col-2"><h6>訓練前正確率</h6></div>
+									<div class="col-2"><h6>訓練後正確率</h6></div>
+									<div class="col-2"><h6>訓練前反應時間(秒)</h6></div>
+									<div class="col-3"><h6>訓練後反應時間(秒)</h6></div>
+									
+									
+						    </div>
+							<hr>
+							{% for data in SingleTableProgressData %}
+							<div>
+							<div class="row">
+									<div class="col-1"><h6><strong>{{loop.index}}</strong></h6></div>
+								    <div class="col-2"><h6>{{data.name}}</h6></div>
+									<div class="col-2"><h6>{{data.prescore}}</h6></div>
+									<div class="col-2"><h6>{{data.postscore}}</h6></div>
+									<div class="col-2"><h6>{{data.preresponse}}</h6></div>
+									<div class="col-3"><h6>{{data.postresponse}}</h6></div>
+						    </div>
+							</div>
+							{% endfor %}
+            			</div>
+						
+          			</div>     
+		</div>
+	 </div>
+	 
+	 
+	 <div class="Bar-day-response">
+	   <hr>
+      <h2><strong>訓練反應時間-日期圖表</strong></h2>
+      <hr>	 
+     <!--購物與交通分項訓練反應時間表-->	  	
+      <div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>購物答題反應時間圖(秒)</h4>
+            </div>
+            <div class="col-6">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+			<div id="plotly_trend_shopping" style="vertical-align:middle;width:100%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_trend_shopping',{{SingleDicResponseData["StoreShopping"]}},{{DateData|tojson}})
+			</script>
+        </div>
+		<div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>交通答題反應時間圖(秒)</h4>
+            </div>
+            <div class="col-6">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_trend_transportation" style="vertical-align:middle;width:100%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_trend_transportation', {{SingleDicResponseData["Transportation"]}},{{DateData|tojson}})
+			</script>
+        </div>
+	  </div>
+	  <!--家事與財務分項訓練反應時間表-->	  	  
+      <hr><div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>家事答題反應時間圖(秒)</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_trend_housework" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_trend_housework', {{SingleDicResponseData["HouseWork"]}},{{DateData|tojson}})
+			</script>
+        </div>
+		<div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>財務答題反應時間圖(秒)</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_trend_finance" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_trend_finance', {{SingleDicResponseData["Finance"]}},{{DateData|tojson}})
+			</script>
+        </div>
+	  </div>
+	  <!--洗衣與廚務分項訓練反應時間表-->	 	   
+       <hr>	<div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>洗衣答題反應時間圖(秒)</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_trend_laundry" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_trend_laundry', {{SingleDicResponseData["Laundry"]}},{{DateData|tojson}})
+			</script>
+        </div>
+		<div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>廚務答題反應時間圖(秒)</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_trend_cooking" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_trend_cooking', {{SingleDicResponseData["Cooking"]}},{{DateData|tojson}})
+			</script>
+        </div>
+	  </div>
+	  <!--撥電話與醫藥分項訓練反應時間表-->	  
+      <hr><div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>撥電話答題反應時間圖(秒)</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_trend_phone" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_trend_phone', {{SingleDicDurationData["Phone"]}},{{DateData|tojson}})
+			</script>
+        </div>
+		<div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>醫藥答題反應時間圖(秒)</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_trend_medicine" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_trend_medicine', {{SingleDicResponseData["Medicine"]}},{{DateData|tojson}})
+			</script>
+        </div>
+	  </div>
+	  <!--單選與九宮格分項訓練反應時間表-->	  
+      <hr><div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>單選答題反應時間圖(秒)</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_trend_quizsingle" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_trend_quizsingle', {{SingleDicResponseData["QuizSingle"]}},{{DateData|tojson}})
+			</script>
+        </div>
+		<div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>九宮格答題反應時間圖(秒)</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_trend_quiznine" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_trend_quiznine', {{SingleDicResponseData["QuizNine"]}},{{DateData|tojson}})
+			</script>
+        </div>
+	  </div>
+	<!--排序與時間分項訓練反應時間表-->	  		  
+      <hr><div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>排序答題反應時間圖(秒)</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_trend_quizorder" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_trend_quizorder', {{SingleDicResponseData["QuizOrder"]}},{{DateData|tojson}})
+			</script>
+        </div>
+		<div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>時間答題反應時間圖(秒)</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_trend_clock" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_trend_clock', {{SingleDicResponseData["Clock"]}},{{DateData|tojson}})
+			</script>
+        </div>
+	  </div>
+	  <!--結束當日訓練活動答題間格時間格線-->   
+	 <!--===當日訓練反應時間條圖===-->
+	 <div class="Bar-day-response">
+	   <hr>
+      <h2><strong>訓練成效(正確率)-日期圖表</strong></h2>
+      <hr>	 
+     <!--購物與交通分項訓練反應時間表-->	  	
+      <div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>購物答題成效圖表</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_distime_shopping" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_day_distime_shopping', {{SingleDicScoreData["StoreShopping"]}},{{DateData|tojson}})
+			</script>
+        </div>
+		<div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>交通答題成效圖表</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_distime_transportation" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_day_distime_transportation', {{SingleDicScoreData["Transportation"]}},{{DateData|tojson}})
+			</script>
+        </div>
+	  </div>
+	  <!--家事與財務分項訓練反應時間表-->	  	  
+      <hr><div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>家事答題成效圖表</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_distime_housework" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_day_distime_housework', {{SingleDicScoreData["HouseWork"]}},{{DateData|tojson}})
+			</script>
+        </div>
+		<div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>財務答題成效圖表</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_distime_finance" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_day_distime_finance', {{SingleDicScoreData["Finance"]}},{{DateData|tojson}})
+			</script>
+        </div>
+	  </div>
+	  <!--洗衣與廚務分項訓練反應時間表-->	 	   
+       <hr>	<div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>洗衣答題成效圖表</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_distime_laundry" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_day_distime_laundry', {{SingleDicScoreData["Laundry"]}},{{DateData|tojson}})
+			</script>
+        </div>
+		<div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>廚務答題成效圖表</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_distime_cooking" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_day_distime_cooking', {{SingleDicScoreData["Cooking"]}},{{DateData|tojson}})
+			</script>
+        </div>
+	  </div>
+	  <!--撥電話與醫藥分項訓練反應時間表-->	  
+      <hr><div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>撥電話答題成效圖表</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_distime_phone" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_day_distime_phone', {{SingleDicScoreData["Phone"]}},{{DateData|tojson}})
+			</script>
+        </div>
+		<div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>醫藥答題成效圖表</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_distime_medicine" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_day_distime_medicine', {{SingleDicScoreData["Medicine"]}},{{DateData|tojson}})
+			</script>
+        </div>
+	  </div>
+	  <!--單選與九宮格分項訓練反應時間表-->	  
+      <hr><div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>單選答題成效圖表</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_distime_quizsingle" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_day_distime_quizsingle', {{SingleDicScoreData["QuizSingle"]}},{{DateData|tojson}})
+			</script>
+        </div>
+		<div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>九宮格答題成效圖表</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_distime_quiznine" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_day_distime_quiznine', {{SingleDicScoreData["QuizNine"]}},{{DateData|tojson}})
+			</script>
+        </div>
+	  </div>
+	<!--排序與時間分項訓練反應時間表-->	  		  
+      <hr><div class="row">
+        <div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>排序答題成效圖表</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_distime_quizorder" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_day_distime_quizorder', {{SingleDicScoreData["QuizOrder"]}},{{DateData|tojson}})
+			</script>
+        </div>
+		<div class="col-md-6 col-sm-12">
+          <div class="row">
+            <div class="col-9">
+              <h4>時間答題成效圖表</h4>
+            </div>
+            <div class="col-3">
+              <h5 class="text-right"></h5>
+            </div>
+          </div>
+
+			<div id="plotly_day_distime_clock" style="vertical-align:middle;width:90%;height:350px;"></div>
+			<script>
+				disp_trend('plotly_day_distime_clock', {{SingleDicScoreData["Clock"]}},{{DateData|tojson}})
+			</script>
+        </div>
+	  </div>
+	  <!--結束當日訓練活動答題間格時間格線-->   
+      </div>
+	  <hr><div class="foot-container">
+        <div class="row justify-content-center">
+         
+			*請注意您從本系統取得的測試結果僅供參考用，亦無法取代醫療人員評估或其他診斷。
+		  
+        </div>
+      </div>      
+      <hr><footer class="text-center">
+        <div class="container">
+          <div class="row">
+            <div class="col-12">
+              <p>Copyright © LongGood MediTech.</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  
+
+
+
+
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->

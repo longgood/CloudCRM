@@ -1,0 +1,98 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} 新增醫院/機構 {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+	<script>
+	function post(url, params) {
+		var temp = document.createElement(“form”);
+		temp.action = url;
+		temp.method = “post”;
+		temp.style.display = “none”;
+		for (var x in params) {
+		var opt = document.createElement(“textarea”);
+		opt.name = x;
+		opt.value = params[x];
+		temp.appendChild(opt);
+		}
+		document.body.appendChild(temp);
+		temp.submit();
+		return temp;
+		}
+	</script>
+    <div class="py-4">
+        <div class="dropdown">
+			<button class="btn btn-gray-800 d-inline-flex align-items-center me-2 dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <svg class="icon icon-xs me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                沒事
+            </button>
+            <div class="dropdown-menu dashboard-dropdown dropdown-menu-start mt-2 py-1">
+				{% for user in patientlist %}
+				<a class="dropdown-item d-flex align-items-center" href="reports?username=raychen">
+                    {{user}}
+                </a>
+				{% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card bg-yellow-100 border-0 shadow">
+
+                <div class="card-body p-2">
+								<div class="text-center text-md-center mb-4 mt-md-0">
+                                <h1 class="mb-0 h3">
+                                    新增機構
+                                </h1>
+                                <br />
+                                <p>
+                                    {% if msg %}
+                                        {{ msg | safe }}
+                                    {% else %}
+                                        愛客戶
+                                    {% endif %}                                     
+                                </p> 
+								</div>
+								<form method="post" action="" class="mt-4">
+								<div class="form-group mb-4">
+                                    <label for="name">公司/醫院名稱</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="basic-addon1">
+                                            <span class="fas fa-user-circle"></span>
+                                        </span>
+                                        {{ form.name(placeholder="公司/醫院名稱", class="form-control") }}
+                                    </div>  
+                                </div>
+
+                                <!-- Form -->
+                                <div class="form-group mb-4">
+                                    <label for="address">地址</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="basic-addon1">
+                                            <span class="fas fa-envelope"></span>
+                                        </span>
+                                        {{ form.address(placeholder="地址", class="input form-control") }}
+                                    </div>  
+                                </div>
+								
+								<div class="d-grid">
+                                    <button type="submit" name="register" class="btn btn-gray-800">新增</button>
+                                </div>
+								</form>
+					
+					
+					
+                </div>
+            </div>
+        </div>
+        
+       
+    </div>
+  
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

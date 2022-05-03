@@ -1,0 +1,229 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+{% extends "layouts/base.html" %}
+
+
+{% block title %} 新增醫院 {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+
+
+    <style type="text/css">
+        #input-content{
+            width: 350px;
+            height: 200px;
+            margin:100px auto 20px;
+        }
+
+        #input-content input{
+            width: 100%;
+            height: 50px;
+            text-indent: 15px;
+            font-size: 18px;
+            outline: none;
+            border:2px solid #333;
+            border-radius: 100px;
+        }
+        
+        /*输入框底部黄色背景去除*/
+        input:-webkit-autofill, 
+         textarea:-webkit-autofill, 
+         select:-webkit-autofill { 
+               -webkit-box-shadow: 0 0 0 1000px white inset; 
+        }
+         input[type=text]:focus, input[type=password]:focus, textarea:focus {
+              -webkit-box-shadow: 0 0 0 1000px white inset; 
+        }
+    </style>
+	<script>
+	function post(url, params) {
+		var temp = document.createElement("form");
+		temp.action = url;
+		temp.method = "post";
+		temp.style.display = "none";
+		for (var x in params) {
+		var opt = document.createElement("textarea");
+		opt.name = x;
+		opt.value = params[x];
+		temp.appendChild(opt);
+		}
+		document.body.appendChild(temp);
+		temp.submit();
+		return temp;
+		}
+	</script>
+    <div class="py-4">
+        <div class="dropdown">
+			<button class="btn btn-gray-800 d-inline-flex align-items-center me-2 dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <svg class="icon icon-xs me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                沒事
+            </button>
+            <div class="dropdown-menu dashboard-dropdown dropdown-menu-start mt-2 py-1">
+				{% for user in patientlist %}
+				<a class="dropdown-item d-flex align-items-center" href="reports?username=raychen">
+                    {{user}}
+                </a>
+				{% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card bg-yellow-100 border-0 shadow">
+
+                <div class="card-body p-2">
+								<div class="text-center text-md-center mb-4 mt-md-0">
+                                <h1 class="mb-0 h3">
+                                    新增機構
+                                </h1>
+                                <br />
+                                <p>
+                                    {% if msg %}
+                                        {{ msg | safe }}
+                                    {% else %}
+                                        愛客戶
+                                    {% endif %}                                     
+                                </p> 
+								</div>
+								<form method="post" action="" class="mt-4">
+								<div class="form-group mb-4">
+                                    <label for="name">公司/醫院名稱</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="basic-addon1">
+                                            <span class="fas fa-user-circle"></span>
+                                        </span>
+                                        {{ form.name(placeholder="公司/醫院名稱", class="form-control") }}
+                                    </div>  
+                                </div>
+
+								<h1>醫院名稱</h1>
+								<input type="text" id="keyword" style="width:300px;" onkeyup="searchkey_event(this.value,event)">
+								<select multiple="multiple" id="sel" onchange="search_onchange()"
+												style="width:300px;display:none">
+								</select>
+								
+									<script>
+									<!--
+									https://www.itread01.com/p/1336190.html
+									-->
+									function searchkey_event(keyword,event){
+	
+										//定義全域性變數
+										var keyword = $("#keyword").val();
+										var sel = document.getElementById("sel");
+										$.get(
+												"customer_search",//url
+												"keyword="+ keyword,//傳送的資料
+												function(data){//獲取響應回來的資料
+													document.getElementById("sel").innerHTML="";
+													var arr = new Array;
+													var arr = data.split("#");//將響應回來的資料按#拆分成陣列			
+													
+													for(var i=0;i<arr.length;i++){//迴圈每一個滿足條件的記錄
+														//將當前迴圈滿足條件的商品名稱生成一個下拉的選項
+														sel.options[i]=new Option(arr[i],i);
+													}
+													//判斷是否有滿足條件的商品
+													if(data.length>0){
+														sel.style.display='block';
+													}else{
+														sel.style.display='none';
+													}
+													//當用戶按下上下鍵時獲取相應的值
+													if(event.keyCode==40){
+														sel.focus();
+													}	
+												},
+												//傳送資料型別
+												"text"
+										);
+									}
+								 function search_onchange(){
+									//輸入回車,獲取輸入框內容焦點
+									$("#sel").keypress(function(){
+											$("#keyword").focus();
+											$("#sel").css("display","none");
+									});
+									 //雙擊,獲取輸入框內容焦點
+									 $("#sel").dblclick(function(){
+										 $("#keyword").focus();
+										 $("#sel").css("display","none");
+									 });
+									 //將選中的下拉列表中的內容新增到輸入框中
+									$("#keyword").val($("option:selected").html());
+									} 
+									</script>
+									
+									
+									
+	
+								
+								</div>
+
+                                <!-- Form -->
+                                <div class="form-group mb-4">
+                                    <label for="address">地址</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="basic-addon1">
+                                            <span class="fas fa-envelope"></span>
+                                        </span>
+                                       
+                                    </div>  
+                                </div>
+								
+																
+								<form>
+									<div id="input-content">
+									   <h1>Ajax輸入</h1>
+									   <input id="inputView" type="text" name="keyword" placeholder="客戶姓名">
+									<div>
+								</form>
+
+								<!-- 搜索结果 -->
+								<div id="result"></div>
+								<!-- https://segmentfault.com/a/1190000038170559 -->
+								<script type="text/javascript">
+								$("#inputView").bind("input propertychang",function(event){
+									var keyword = $.trim(this.value);
+									// ajax搜索
+									$.ajax({
+										type: "GET",
+										url: "customer_search?keyword="+keyword,
+										success:function(data){
+
+											$("#result").html("<p>我看看:"+data+"</p>");
+										},
+										error : function() {
+										  $("#result").html("<p>error</p>");
+										}
+									});
+								});
+								
+								
+								
+								</script>
+								
+								
+								
+								
+								<div class="d-grid">
+                                    <button type="submit" name="register" class="btn btn-gray-800">新增</button>
+                                </div>
+								</form>
+					
+					
+					
+                </div>
+            </div>
+        </div>
+        
+       
+    </div>
+  
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}
