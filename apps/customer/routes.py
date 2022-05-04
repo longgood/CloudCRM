@@ -176,16 +176,27 @@ def customer_facility():
                                success=True,form=create_facility_form)
     else:
         return render_template('customer/add_new_facility.html', form=create_facility_form)
+@blueprint.route('/facility_search',methods=['GET'])
+@login_required
+def facility_search():
+    keyword = request.args.get('keyword')
+    
+    data=TCustomer.query.filter_by(name=keyword).all()
+    result=""
+    print("search",data)
+    for r in data:
+        result=result+r.name+"#"
+    print("-------------result----------------",result)
+    return result
 @blueprint.route('/customer_search',methods=['GET'])
 @login_required
 def customer_search():
     keyword = request.args.get('keyword')
     
-    data=TFacility.query.filter_by(name=keyword).all()
+    data=TCustomer.query.filter_by(name=keyword).all()
     result=""
-    print("search",data)
+
     for r in data:
         result=result+r.name+"#"
-        
-    print("result",result)
+    print("-------------result----------------",result)
     return result
