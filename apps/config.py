@@ -24,12 +24,12 @@ class ProductionConfig(Config):
 
     # PostgreSQL database
     SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}'.format(
-        config('DB_ENGINE', default='postgresql'),
-        config('DB_USERNAME', default='sylvia'),
-        config('DB_PASS', default='pass'),
-        config('DB_HOST', default='localhost'),
-        config('DB_PORT', default=5432),
-        config('DB_NAME', default='longgood-flask')
+        config('DB_ENGINE', default='mysql'),
+        config('DB_USERNAME', default='ray'),
+        config('DB_PASS', default='rraayy'),
+        config('DB_HOST', default='192.168.0.153'),
+        config('DB_PORT', default=3306),
+        config('DB_NAME', default='longgood-crm')
     )
 class DebugConfig(Config):
     DEBUG = True

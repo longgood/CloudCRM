@@ -149,8 +149,23 @@ def go_backup_query():
     print("trim:",len(unique_facility))    
     for f in unique_facility:
         print(f)
+def group_authorize(devicelist,isGo=False,topic="HAPPYGOGO",nodueday="2060-12-30",status="LUXURY"):
         
-        
-show_device("DC8B280D7A8C")
-autho_device("DC8B280D7A8C","MAJESTY",nodueday="2060-12-30",status="LUXURY")
+    for device in devicelist:
+        result=show_device(device)
+   
+    if isGo:
+        print("開始設定:")
+        nList=[]
+        for device in devicelist:
+            result=autho_device(device,topic,nodueday,status)
+            if not result:
+                nList.append(device)
+        print("尚未開機或是上網開通:",nList) 
+def nttu_setting():
+    print("這是20220510台東遠距復健計畫新增開通")
+    devicelist=["parayapay","Pungudang01","kaadaadaan","mingatw","LC01","Tamalrakaw","TAIBEN","maysa","lp01","Aljungic"]
+    group_authorize(devicelist,True,topic="HAPPYGOGO",nodueday="2022-11-07")
+nttu_setting()        
+#autho_device("DC8B280D7A8C","MAJESTY",nodueday="2060-12-30",status="LUXURY")
 #go_backupdb()
