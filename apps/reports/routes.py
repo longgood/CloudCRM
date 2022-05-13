@@ -26,12 +26,17 @@ def reports():
 @blueprint.route('/report_general')
 @login_required
 def report_general():
-
     usermanager=current_user
-    acts=data.get_activity()
-    fac=data.get_facility()
-    cust=data.get_customer()
-    return render_template('report/report_general.html',activity=acts,facility=fac,customer=cust)
+    return data.get_report_general(usermanager)
+    
+
+@blueprint.route('/report_weekly')
+@login_required
+def report_weekly():    
+    usermanager=current_user
+    return data.get_report_weekly(usermanager)
+    
+
 
 @blueprint.route('/report_history')
 @login_required

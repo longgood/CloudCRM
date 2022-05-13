@@ -11,7 +11,7 @@
         
     </div>
     <div class="row">
-        <div class="col-12 mb-4">
+        <div class="col-auto">
             <div class="card bg-yellow-100 border-0 shadow">
                 <div class="card-header d-sm-flex flex-row align-items-center flex-0">
 
@@ -21,30 +21,74 @@
                 </div>
                 <div class="card-body p-2">
                     <div class="row">
-					<p>使用活動紀錄<p>
+					<p>----使用活動紀錄----<p>
+					
+					
+					<!----格式化可以點選刪除--->
 					<div class="row">
+					<div class="col-auto">
+							<div class="col">      
 
-						<div class="col"><p>機構代碼<p></div>
-						<div class="col"><p>客戶代碼<p></div>
-						<div class="col"><p>起始時間<p></div>
-						<div class="col"><p>下次拜會時間<p></div>
-						<div class="col"><p>拜訪類別<p></div>
-						<div class="col"><p>敘述<p></div>
-						<div class="col"><p>下次重點<p></div>
-					</div>
-					{% for act in activity %}
-					<div class="row">
+								
+									<div class="col-auto">
+										<div class="row">
 
-						<div class="col"><p>{{ act.facilityid }}<p></div>
-						<div class="col"><p>{{ act.customerList }}<p></div>
-						<div class="col"><p>{{act.starttime}}<p></div>
-						<div class="col"><p>{{act.nexttime}}<p></div>
-						<div class="col"><p>{{act.type}}<p></div>
-						<div class="col"><p>{{act.description}}<p></div>
-						<div class="col"><p>{{act.nextstep}}<p></div>
+											<div class="col-2"><h6>機構名稱</h6></div>
+											<div class="col-1"><h6>對象</h6></div>
+											<div class="col-1"><h6>時程</h6></div>
+											<div class="col-4"><h6>內容</h6></div>
+											<div class="col-3"><h6>下次重點</h6></div>
+										</div>
+										<div class="card-header d-sm-flex flex-row align-items-center flex-0">
+										</div>
+										{% for act in activity %}
+										<div>
+										<div class="row">
+
+											<div class="col-2"><h6>{{loop.index}}.{{ act.facility |safe}}</h6></div>
+											<div class="col-1"><h6>{{act.strtype}}<br>{{ act.customer |safe}}<br>從{{act.starttime.strftime("%H")}}:{{act.starttime.strftime("%M")}}<br>到{{act.endtime.strftime("%H")}}:{{act.endtime.strftime("%M")}}</h6></div>
+											<div class="col-1"><h6>{{ act.starttime.strftime("%m-%d") |safe}}<br>{{ act.nexttime.strftime("%m-%d") |safe}}</h6></div>
+											<div class="col-4"><p>{{act.description}}<p></div>
+											<div class="col-4"><p>{{act.nextstep}}<p></div>
+											
+										</div>
+										</div>
+										{% endfor %}
+									</div>
+							</div>
 					</div>
-					{% endfor %}
-					<p>客戶名稱<p>
+					  
+					<div class="col">
+					  
+					</div>
+				  </div>
+				  
+				  
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					<p>----客戶名稱----<p>
 					<div class="row">
 						<div class="col"><p>代碼<p></div>
 						<div class="col"><p>姓名<p></div>
@@ -62,7 +106,7 @@
 					
 					
 					
-					<p>機構名稱名稱<p>
+					<p>----機構名稱名稱----<p>
 					<div class="row">
 						<div class="col"><p>代碼<p></div>
 						<div class="col"><p>名稱<p></div>

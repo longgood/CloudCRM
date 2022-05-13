@@ -37,22 +37,29 @@ class Users(db.Model, UserMixin):
             setattr(self, property, value)
 
     def __repr__(self):
-        return str(self.realname)
+        value="姓名:'%s',id='%s',userid='%s',  職稱:'%s'" % (
+                   self.realname,self.id, self.userid, self.jobtitle) 
+        
+        return value
 #每一位顧客或是談話的對象。
 class TCustomer(db.Model):
     __tablename__ = 'TCustomer'
     id = db.Column(db.Integer, primary_key=True)
+    #我們這邊是由誰建立的
+    ownerid=db.Column(db.String(64))
     name = db.Column(db.String(64))
     phone=db.Column(db.String(64))
     cellphone=db.Column(db.String(64))
     lineid=db.Column(db.String(64))
     email = db.Column(db.String(64))
     #每一次相關的活動都會記錄下來。
-    activityList=db.Column(db.String(64))
+    activityList=db.Column(db.String(4096))
     #目前所屬的公司
     facilityid=db.Column(db.String(64))
     department = db.Column(db.String(64))    
     title = db.Column(db.String(64))    
+    
+    submanagers=db.Column(db.String(256))
     def __init__(self):
         return
     def __repr__(self):
@@ -96,13 +103,12 @@ class TActivity(db.Model):
     #甚麼樣類型的拜訪，0寫信，1.LINE(訊息)，2.十分鐘內的通話，3.30分鐘的通話，4.會面，5.面對面三人以上會議
     
     type=db.Column(db.Integer)
-   
-
-    
     description=db.Column(db.Text)
     nextstep=db.Column(db.Text)
     #supervisor的建議。
     recommand=db.Column(db.Text)
+    
+    status= db.Column(db.Integer)
     
     def __init__(self, **kwargs):
         self.customerList=""
