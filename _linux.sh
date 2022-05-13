@@ -1,6 +1,6 @@
 #!/bin/sh
 echo "----start----"
-cd /home/ray/CloudMajesty
+cd /home/ray/CloudCRM
 echo "------------"
 source env/bin/activate
 export FLASK_ENV=development
