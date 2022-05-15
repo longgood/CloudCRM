@@ -35,9 +35,6 @@ def report_general():
 def report_weekly():    
     usermanager=current_user
     return data.get_report_weekly(usermanager)
-    
-
-
 @blueprint.route('/report_history')
 @login_required
 def report_history():

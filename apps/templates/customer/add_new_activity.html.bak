@@ -56,19 +56,7 @@
 		}
 	</script>
     <div class="py-4">
-        <div class="dropdown">
-			<button class="btn btn-gray-800 d-inline-flex align-items-center me-2 dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <svg class="icon icon-xs me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                沒事
-            </button>
-            <div class="dropdown-menu dashboard-dropdown dropdown-menu-start mt-2 py-1">
-				{% for user in patientlist %}
-				<a class="dropdown-item d-flex align-items-center" href="reports?username=raychen">
-                    {{user}}
-                </a>
-				{% endfor %}
-            </div>
-        </div>
+        
     </div>
     <div class="row">
         <div class="col-12 mb-4">
@@ -90,12 +78,14 @@
 								</div>
 								<form method="post" action="" class="mt-4">
 								<h5>機構/公司</h5>
-								<input type="text" name=facility_name id="facility_name" style="width:300px;" onkeyup="searchkey_event(this.value,this.id,event)" placeholder="醫院機構" value={{form.facility_name}}>
-								<select multiple="multiple" id="sel" onchange="search_onchange_facility('facility_name')" style="width:300px;display:none" >
+								<input type="text" name=facility_name id="facility_name" style="width:300px;" onkeyup="searchkey_event(this.value,this.id,'sel_facility','facility_search',event)" placeholder="醫院機構" value={{form.facility_name}}>
+								<select multiple="multiple" id="sel_facility" onchange="search_onchange_facility('facility_name')" style="width:300px;display:none" >
 								</select>
 								
 								<h5>客戶姓名</h5>
-								<input type="text" name=customer_name id="customer_name" style="width:300px;" placeholder="陳大成" value={{form.customer_name}} >職稱
+								<input type="text" name=customer_name id="customer_name" style="width:300px;" onkeyup="searchkey_event(this.value,this.id,'sel_customer','customer_search',event)" placeholder="陳大成" value={{form.customer_name}} >
+								<select multiple="multiple" id="sel_customer" onchange="search_onchange_customer('customer_name')" style="width:300px;display:none" >
+								</select>職稱
 								
 								<input type="text" name=customer_title id="customer_title" style="width:150px;" placeholder="復健部主任" value={{form.customer_title}} >
 								
@@ -103,15 +93,15 @@
 									<!--
 									https://www.itread01.com/p/1336190.html
 									-->
-									function searchkey_event(keyword,obj_id,event){
+									function searchkey_event(keyword,obj_id,selname,interfacename,event){
 										//定義全域性變數
 										var keyword = $("#"+obj_id).val();
-										var sel = document.getElementById("sel");
+										var sel = document.getElementById(selname);
 										$.get(
-												"customer_search",//url
+												interfacename,//url
 												"keyword="+ keyword,//傳送的資料
 												function(data){//獲取響應回來的資料
-													document.getElementById("sel").innerHTML="";
+													document.getElementById(selname).innerHTML="";
 													var arr = new Array;
 													var arr = data.split("#");//將響應回來的資料按#拆分成陣列			
 													
@@ -136,20 +126,58 @@
 									}
 								 function search_onchange_facility(obj_id){
 									//輸入enter,獲取輸入框內容焦點
-									$("#sel").keypress(function(){
+									$("#sel_facility").keypress(function(){
 											$("#"+obj_id).focus();
-											$("#sel").css("display","none");
+											$("#sel_facility").css("display","none");
 									});
 									 //雙擊,獲取輸入框內容焦點
-									 $("#sel").dblclick(function(){
+									 $("#sel_facility").dblclick(function(){
 										 $("#"+obj_id).focus();
-										 $("#sel").css("display","none");
+										 $("#sel_facility").css("display","none");
+									 });
+									 //將選中的下拉列表中的內容新增到輸入框中
+									$("#"+obj_id).val($("option:selected").html());
+									
+									} 
+									
+									function search_onchange_customer(obj_id){
+									//輸入enter,獲取輸入框內容焦點
+									$("#sel_customer").keypress(function(){
+											$("#"+obj_id).focus();
+											$("#sel_customer").css("display","none");
+									});
+									 //雙擊,獲取輸入框內容焦點
+									 $("#sel_customer").dblclick(function(){
+										 $("#"+obj_id).focus();
+										 $("#sel_customer").css("display","none");
 									 });
 									 //將選中的下拉列表中的內容新增到輸入框中
 									$("#"+obj_id).val($("option:selected").html());
 									
 									} 
 									</script>
+								
+								
+								
+								
+								
+								
+								<h5>工作內容描述</h5>
+								<textarea name=description id="description_task" style="width:300px;height:100px;" placeholder="此次工作重點"></textarea>
+								
+								<h5>下次拜訪重點</h5>
+								<textarea name=nextstep id="next_task" style="width:300px;height:100px;" placeholder="敘述下次聯繫的重點"></textarea>
+								
+								<script>
+									var replaceRegex=/(\n\r|\r\n|\n)/g;
+
+									document.getElementById("description_task").value = document.getElementById("description_task").value.replace(replaceRegex,"<br>");
+									document.getElementById("next_task").value = document.getElementById("next_task").value.replace(replaceRegex,"<br>");
+									
+									
+								</script>
+								
+								
 								
 								
 								
@@ -174,12 +202,8 @@
 									document.getElementById("start_time").max = theDay.setDate(theDay.getDate()+10);
 									
 								</script>
-							
-								
-								
-								
 								<h5>花費時間</h5>
-								<select name=minutesdelta	style="width:300px;" >
+								<select name=minutesdelta style="width:300px;" >
 
 									<option>十分鐘</option>
 									<option>半小時</option>
@@ -197,18 +221,7 @@
 									<option>會面</option>
 									<option>面對面三人以上會議</option>
 									
-									
-									
-									
-									
-								</select>
-								
-								<h5>工作內容描述</h5>
-								<textarea name=description id="description_task" style="width:300px;height:100px;" placeholder="此次工作重點"></textarea>
-								
-								<h5>下次拜訪重點</h5>
-								<textarea name=nextstep id="next_task" style="width:300px;height:100px;" placeholder="敘述下次聯繫的重點"></textarea>
-													
+								</select>								
 
 								<h5>下次拜訪時間</h5>
 								<select name=timedelta style="width:300px;" >
@@ -217,11 +230,9 @@
 									<option>兩周後</option>
 									<option>一個月後</option>
 									<option>一季(三個月)</option>
+									<option>一年</option>
 								</select>
 
-	
-								
-								
 								</div>
 
 								

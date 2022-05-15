@@ -120,7 +120,7 @@ class TCustomerData():
             db.session.commit()
             msg=facilityname+customername+title+"新的拜訪資料已經建立!妳好棒!"
             
-
+                            
         return render_template('customer/add_new_activity.html', form=activity_form,msg=msg)
     
 """
