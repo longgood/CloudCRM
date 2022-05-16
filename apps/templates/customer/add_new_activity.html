@@ -12,6 +12,17 @@
 
 
     <style type="text/css">
+		.container{
+		   display:flex; /*一開始需要在父層宣告為 flex 才有效*/
+		}
+		​
+		.item-right{
+		   flex:1; /*對應子層加上；1數值是內元件之間佔的比例*/
+		}
+		​
+		.item-left{
+		   flex:1; /*對應子層加上*/
+		}
         #input-content{
             width: 350px;
             height: 200px;
@@ -55,9 +66,7 @@
 		return temp;
 		}
 	</script>
-    <div class="py-4">
-        
-    </div>
+
     <div class="row">
         <div class="col-12 mb-4">
             <div class="card bg-yellow-100 border-0 shadow">
@@ -236,18 +245,20 @@
 
 								
 								
+								
+								
+								
 								<div class="d-grid">
                                     <button type="submit" name="register" class="btn btn-gray-300">新增</button>
                                 </div>
 								</form>
-					
-					
-					
                 </div>
-            </div>
-        </div>
+            					
+			</div>
         
-       
+
+		</div>
+        
     </div>
   
 {% endblock content %}

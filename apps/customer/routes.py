@@ -20,7 +20,11 @@ from flask_login import (
 )
 data=TCustomerData()
 
-
+@blueprint.route('/customer_followup')
+@login_required
+def customer_followup():
+    usermanager=current_user
+    return data.get_customer_followup(usermanager)
     
 @blueprint.route('/customer_activity',methods=['GET', 'POST'])
 @login_required

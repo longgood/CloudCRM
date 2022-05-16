@@ -10,7 +10,9 @@ class Config(object):
 
     # Set up the App SECRET_KEY
     SECRET_KEY = config('SECRET_KEY', default='321ES#p%reAA_009AC')
-
+    LANGUAGES = ['en', 'zh','ja']
+    BABEL_DEFAULT_LOCALE = 'en'
+    BABEL_DEFAULT_TIMEZONE = 'UTC'
     # This will create a file in <app> FOLDER
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'longgooddb.bytes')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
