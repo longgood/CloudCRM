@@ -13,6 +13,9 @@ class TData():
     def get_activity(self,ownerid):
         result=TActivity.query.filter_by(ownerid=ownerid).all()
         return result
+    def get_all_activity_number(self):
+        return TActivity.query.count()
+        
     def get_facility(self):
         result=TFacility.query.all()
         return result
@@ -55,10 +58,19 @@ class TData():
             acts[count].facility=facility_name
             acts[count].strtype=self.get_type_str(a.type)
             count=count+1
-        return render_template('report/report_general.html',activity=acts,facility=fac,customer=cust,usermanager=usermanager)
+            
+        #---統計資料--------------------
+        all_activity_number=self.get_all_activity_number()
+        my_activity_number=count
+        static={}
+        static["all_act_num"]=all_activity_number
+        static["my_act_num"]=my_activity_number
+        print(static)
+        return render_template('report/report_general.html',static=static,activity=acts,facility=fac,customer=cust,usermanager=usermanager)
     #產出每周的報表
 
     def get_report_weekly(self, usermanager):
+
         ownerid=usermanager.id
         acts=self.get_activity(ownerid)
         count=0
@@ -68,7 +80,9 @@ class TData():
         #--需要設定時間-----------
         new_act=[]
         for a in acts:
-            if (a.starttime-start_day).days>=-1:
+            
+            day_diff=(a.starttime.day-start_day)
+            if day_diff>=-1:
                 print("IN:",a.starttime)
                 new_act.append(a)
             else:
@@ -126,12 +140,12 @@ class TData():
         cum_days=(now-this_start).days
         
         if cum_days<3:
-            start_day=last_start.days
-            end_day=last_end.days
+
+            start_day=last_start.day
+            end_day=last_end.day
         else:
             start_day=this_start
             end_day=now
-            
         return start_day, end_day
 """
     def __init__(self):
