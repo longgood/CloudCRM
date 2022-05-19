@@ -100,7 +100,7 @@ class TActivity(db.Model):
     starttime=db.Column(db.DateTime)
     endtime=db.Column(db.DateTime)
     nexttime=db.Column(db.DateTime)
-    #甚麼樣類型的拜訪，0寫信，1.LINE(訊息)，2.十分鐘內的通話，3.30分鐘的通話，4.會面，5.面對面三人以上會議
+    #甚麼樣類型的拜訪，0寫信，1.LINE(訊息)，2.十分鐘內的通話，3.30分鐘的通話，4.會面，5.面對面三人以上會議，-99。再會。
     
     type=db.Column(db.Integer)
     description=db.Column(db.Text)
@@ -108,8 +108,14 @@ class TActivity(db.Model):
     #supervisor的建議。
     recommand=db.Column(db.Text)
     
-    status= db.Column(db.Integer)
+
     
+    def update(self):
+        try:
+            db.session.flush()
+            db.session.commit()
+        except:
+            print("--error--")
     def __init__(self, **kwargs):
         self.customerList=""
         return

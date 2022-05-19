@@ -16,6 +16,12 @@ from flask_login import (
     current_user
 )
 data=TData()
+@blueprint.route('/reports_recovery')
+@login_required
+def reports_recovery():
+    data.report_recovery()
+    return ""
+
 @blueprint.route('/reports')
 @login_required
 def reports():
@@ -23,10 +29,20 @@ def reports():
     return render_template('home/report_general.html',
                             username=username,
                             patientlist=['陳阿帥','妳阿笨','天天才'])
-@blueprint.route('/report_general')
+@blueprint.route('/report_general',methods=['GET'])
 @login_required
 def report_general():
     usermanager=current_user
+    
+    #取得目前所有使用者資訊
+    activityid=request.args.get('activityid')
+    isdelete=request.args.get('isdelete')
+    #在檢視單人時，會有刪除的選項。
+    if isdelete:
+        data.hide_activity(activityid)
+        print("isdelete",isdelete,",data:",activityid)
+        activityid=None
+    
     return data.get_report_general(usermanager)
     
 
@@ -56,18 +72,3 @@ def report_single():
 def user_list():
     return render_template('home/user_list.html')
  
-@blueprint.route('/skeleton')
-@login_required
-def user_skeleton():
-    return render_template('home/skeleton.html')
-    
-    
-    
-@blueprint.route('/skel-<template>')
-@login_required
-def user_cust_skeleton(template):
-    activityid="\"static/skeleton/"+template+".csv.lzma.bvh\""
-    print("activityid:",activityid)
-    return render_template('home/report_skeleton.html',
-                                              activityid=activityid
-                                              )

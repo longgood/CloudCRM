@@ -12,7 +12,7 @@ class TData():
     def __init__(self):
         return
     def get_activity(self,ownerid):
-        result=TActivity.query.filter_by(ownerid=ownerid).all()
+        result=TActivity.query.filter(TActivity.ownerid==ownerid,TActivity.type>=0).all()
         return result
     def get_all_activity_number(self):
         return TActivity.query.count()
@@ -43,6 +43,17 @@ class TData():
             result="面對面三人以上會議"
     
         return result
+    def hide_activity(self,activityid):
+        act=TActivity.query.filter_by(id=activityid).first()
+        if act:
+            print("--------更新前的status:",act.type)
+            act.type=-99
+            act.update()
+        
+        act=TActivity.query.filter_by(id=activityid).first()
+        if act:
+            print("---------更新後的status:",act.type)
+        return
     def get_report_general(self,usermanager):
         ownerid=usermanager.id
         acts=self.get_activity(ownerid)
@@ -152,4 +163,10 @@ class TData():
         return start_day, end_day
     
     
+    def report_recovery(self):
+        result=TActivity.query.filter(TActivity.type <=0).all()
         
+        for r in result:
+            r.type=0
+            r.update()
+            

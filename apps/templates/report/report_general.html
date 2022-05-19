@@ -7,6 +7,20 @@
 
 {% block content %}
 	
+	
+	<script>
+		function confirmFunc(actid) {
+		  let text;
+		  if (confirm("確認是否刪除!"+actid) == true) {
+			text = "確認刪除!";
+			window.location.replace("?activityid="+actid+"&isdelete=True");		 
+		 } else {
+			text = "取消也好!";
+		  }
+		 
+		}
+	</script>
+	
     <div class="py-4">
         
     </div>
@@ -49,7 +63,43 @@
 											<div class="col-1"><h6>{{act.strtype}}<br>{{ act.customer |safe}}<br>從{{act.starttime.strftime("%H")}}:{{act.starttime.strftime("%M")}}<br>到{{act.endtime.strftime("%H")}}:{{act.endtime.strftime("%M")}}</h6></div>
 											<div class="col-1"><h6>{{ act.starttime.strftime("%m-%d") |safe}}<br>{{ act.nexttime.strftime("%m-%d") |safe}}</h6></div>
 											<div class="col-4"><p>{{act.description}}<p></div>
-											<div class="col-4"><p>{{act.nextstep}}<p></div>
+											<div class="col-2"><p>{{act.nextstep}}<p></div>
+											
+											
+											
+											
+											<div class="col-2">
+													<div class="col-32 col-md-4 col-xl-6 mb-4 mb-md-0">
+														<p class="mb-0 text-center text-lg-start">
+														<button onclick="confirmFunc({{act.id}})">刪除</button>
+													</div>
+											</div>
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
 											
 										</div>
 										</div>
