@@ -1,8 +1,11 @@
 from apps.authentication.models import TFacility,TActivity,TCustomer
-from apps import db
+#from apps import db
 from flask import render_template
 from datetime import datetime,timedelta
+from apps.reports.datas import TData
+import datetime
 import random
+reportdata=TData()
 #所有資料的介面
 class TCustomerData():
     usermanager="操作(使用)者名稱"
@@ -24,7 +27,8 @@ class TCustomerData():
             result=3
         elif input=="面對面三人以上會議":
             result=4
-        
+        elif input=="手動輸入":
+            resultd=10
         return result
         
     def get_minutes_delta(self,input):
@@ -75,7 +79,71 @@ class TCustomerData():
                 fac=TFacility()
                 fac.id=self.get_id(TFacility.query.count())
                 fac.name=facilityname
-                db.session.add(fac)
+                fac.add_new()
+                facility_id=fac.id
+            else:
+                facility_id=facility.id
+
+            customer = TCustomer.query.filter_by(name=customername,title=title).first()
+            if not customer:
+                customer=TCustomer()
+                customer.id=self.get_id(TCustomer.query.count())
+                customer.ownerid=usermanager.id
+                customer.name=customername
+                customer.title=title
+                customer.facilityid=facility_id
+                customer.add_new()
+                
+                
+                
+            else:
+                print(customername+title+"的資料已經存在資料庫內!")
+            act=TActivity()
+
+            act_count=TActivity.query.count()
+            id=self.get_id(act_count)
+            print("id:",id)
+            act.id=id
+            
+            act.ownerid=usermanager.id
+            act.facilityid=facility_id
+            act.customerList=str(customer.id)+";"
+            act.starttime=starttime
+            act.endtime=starttime+timedelta(minutes=minutes_delta)
+            
+            delta = timedelta(days=day_delta)
+            act.nexttime=delta+starttime
+            act.type=type
+            act.description=activity_form.description
+            act.nextstep=activity_form.nextstep
+            act.recommand=""
+
+            #supervisor的建議。
+            act.status=0
+            act.add_new()
+            #db.session.add(act)    
+            #db.session.commit()
+            msg=facilityname+customername+title+"新的拜訪資料已經建立!妳好棒!"
+            
+                            
+        return render_template('customer/add_new_activity.html', form=activity_form,msg=msg)
+    def cal_customer_activity_adding_mode(self,activity_form,usermanager,isregister):
+        msg=None
+        if isregister:
+            facilityname=activity_form.facility_name
+            customername=activity_form.customer_name
+            title=activity_form.customer_title
+            facility = TFacility.query.filter_by(name=facilityname).first()
+            starttime=datetime.strptime(activity_form.starttime, "%Y-%m-%dT%H:%M")
+            day_delta=self.get_day_delta(activity_form.timedelta)
+            minutes_delta=self.get_minutes_delta(activity_form.minutesdelta)
+            type=self.get_type(activity_form.type)
+            if not facility:
+                fac=TFacility()
+                fac.id=self.get_id(TFacility.query.count())
+                fac.name=facilityname
+                fac.add_new()
+                #db.session.add(fac)
                 facility_id=fac.id
                 print(facilityname,"已經新建立!",fac)
             else:
@@ -89,7 +157,8 @@ class TCustomerData():
                 customer.name=customername
                 customer.title=title
                 customer.facilityid=facility_id
-                db.session.add(customer)
+                customer.add_new()
+                #db.session.add(customer)
                 print(customername,"已經新增!",customer)
                 
             else:
@@ -116,13 +185,38 @@ class TCustomerData():
 
             #supervisor的建議。
             act.status=0
-            db.session.add(act)    
-            db.session.commit()
+            act.add_new()
+           
             msg=facilityname+customername+title+"新的拜訪資料已經建立!妳好棒!"
-            
-                            
-        return render_template('customer/add_new_activity.html', form=activity_form,msg=msg)
+        return activity_form,msg
+    def get_customer_activity_adding_mode(self,form,usermanager,isregister):
+        print("+++++++++++++++++++++++++++++++",form.customer_name)
+        now_dt = datetime.datetime.today() 
+        now_dt_format = now_dt.strftime('%Y-%m-%dT%H:%M')
+        facility_name=""
+        customer_title=""
+        
+        cust=TCustomer.query.filter_by(name=form.customer_name).first()
+        if cust:
+            customer_title=cust.title
+            fac=TFacility.query.filter_by(id=cust.facilityid)
+            print("-----------****有~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",fac)
+            if fac:
+                facility_name=fac.name
+        
+        form.facility_name=facility_name
+        form.customer_title=customer_title
+        form.starttime=now_dt_format
 
+        form.type="手動輸入"
+        form.timedelta="一周後"
+        form.minutesdelta="十分鐘"
+        
+        activity_form,msg=self.cal_customer_activity_adding_mode(form,usermanager,isregister)
+        result_facility=reportdata.cal_report_weekly(usermanager)
+
+        
+        return render_template('customer/add_new_activity_adding_mode.html', form=activity_form,msg=msg,activity=result_facility)
     #後續跟進
     def get_customer_followup(self,usermanager):
         ownerid=usermanager.id

@@ -84,6 +84,11 @@
                                         愛客戶
                                     {% endif %}                                     
                                 </p> 
+								<div class="d-grid">
+                                    <button onclick="location.href='customer_activity_adding_mode'" type="button">跟進式新增</button>
+                                </div>
+								
+								
 								</div>
 								<form method="post" action="" class="mt-4">
 								<h5>機構/公司</h5>
@@ -176,19 +181,6 @@
 								
 								<h5>下次拜訪重點</h5>
 								<textarea name=nextstep id="next_task" style="width:300px;height:100px;" placeholder="敘述下次聯繫的重點"></textarea>
-								
-								<script>
-									var replaceRegex=/(\n\r|\r\n|\n)/g;
-
-									document.getElementById("description_task").value = document.getElementById("description_task").value.replace(replaceRegex,"<br>");
-									document.getElementById("next_task").value = document.getElementById("next_task").value.replace(replaceRegex,"<br>");
-									
-								</script>
-								
-								
-								
-								
-								
 								
 								<h5>開始時間</h5>
 								<input type="datetime-local" id="start_time" style="width:300px;" 

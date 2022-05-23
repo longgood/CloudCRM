@@ -1,6 +1,4 @@
 from apps.authentication.models import TFacility,TActivity,TCustomer
-from apps import db
-#from apps.reports.BIOANALYSIS import ClassIADL
 from flask import render_template
 from flask_babel import *
 from collections import OrderedDict
@@ -25,6 +23,7 @@ class TData():
         return result    
     def get_customer_name(self,customerid):
         name=TCustomer.query.filter_by(id=customerid).first().name
+        
         return name
     def get_facility_name(self,facilityid):
         name=TFacility.query.filter_by(id=facilityid).first().name
@@ -46,13 +45,12 @@ class TData():
     def hide_activity(self,activityid):
         act=TActivity.query.filter_by(id=activityid).first()
         if act:
-            print("--------更新前的status:",act.type)
+
             act.type=-99
             act.update()
         
         act=TActivity.query.filter_by(id=activityid).first()
-        if act:
-            print("---------更新後的status:",act.type)
+       
         return
     def get_report_general(self,usermanager):
         ownerid=usermanager.id
@@ -82,9 +80,9 @@ class TData():
         print(static)
         return render_template('report/report_general.html',static=static,activity=acts,facility=fac,customer=cust,usermanager=usermanager)
     #產出每周的報表
-
-    def get_report_weekly(self, usermanager):
-
+    
+    
+    def cal_report_weekly(self,usermanager):
         ownerid=usermanager.id
         acts=self.get_activity(ownerid)
         count=0
@@ -108,6 +106,8 @@ class TData():
             facilityid=a.facilityid
             type      =a.type
             customer_name=self.get_customer_name(customerid)
+            print(customer_name)
+            
             facility_name=self.get_facility_name(facilityid)
             acts[count].customerid=customerid
             acts[count].customer=customer_name
@@ -128,6 +128,7 @@ class TData():
                 
                 customer=[]
                 fac["customer"]=""
+                fac["customer_name"]=main.customer
                 customerN=0
                 for a in acts:
                     #相同的機構
@@ -138,9 +139,9 @@ class TData():
                         customerN=customerN+1
                             
                 result_facility.append(fac)
-        
-       
-            
+        return result_facility
+    def get_report_weekly(self, usermanager):
+        result_facility=self.cal_report_weekly(usermanager)
         return render_template('report/report_weekly.html',activity=result_facility)
     #取得期間的前後日期，現在已周為單位，之後再取得月。
     def get_duration_edge(self,duration="weekly"):

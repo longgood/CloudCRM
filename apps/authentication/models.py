@@ -60,6 +60,48 @@ class TCustomer(db.Model):
     title = db.Column(db.String(64))    
     
     submanagers=db.Column(db.String(256))
+    def check_key(self,dic,key):
+       
+        result=None
+        try:
+            result=dic[key]
+            if result == "NULLUSER":
+                result=None
+        except KeyError:
+            result=None
+        return result
+    def add_new(self,dic=None):
+    
+        result=False
+        if dic:
+            id=self.check_key(  dic,"id")
+        else:
+            id=self.id
+        if id is None:
+            print("錯誤ID",dic["id"])
+            return result
+        
+        user=TCustomer.query.filter_by(id=id).first()
+        if not user:
+            if dic:
+                self.id          = self.check_key(  dic,"id") 
+                self.ownerid    = self.check_key(  dic,"ownerid")  
+                self.name  = self.check_key(  dic,"name")  
+                self.phone    = self.check_key(  dic,"phone") 
+                self.cellphone     = self.check_key(  dic,"cellphone") 
+                self.lineid      = self.check_key(  dic,"lineid") 
+                self.email      = self.check_key(  dic,"email")  
+                self.activityList      = self.check_key(  dic,"activityList")  
+                self.facilityid       = self.check_key(  dic,"phone") 
+                self.department  = self.check_key(  dic,"department")  
+                self.title      = self.check_key(  dic,"title")  
+                self.submanagers    = self.check_key(  dic,"submanagers")  
+            db.session.add(self)
+            db.session.commit()
+            result=True
+        else:
+            print("---重複產出----")
+        return result
     def __init__(self):
         return
     def __repr__(self):
@@ -84,6 +126,40 @@ class TFacility(db.Model):
 
                 setattr(self, property, value)
         return
+    def check_key(self,dic,key):
+       
+        result=None
+        try:
+            result=dic[key]
+            if result == "NULLUSER":
+                result=None
+        except KeyError:
+            result=None
+        return result
+    def add_new(self,dic=None):
+    
+        result=False
+        if dic:
+            id=self.check_key(  dic,"id")
+        else:
+            id=self.id
+        if id is None:
+            print("錯誤ID",dic["id"])
+            return result
+        
+        fac=TFacility.query.filter_by(id=id).first()
+        if not fac:
+            if dic:
+                self.id          = self.check_key(  dic,"id") 
+                self.name  = self.check_key(  dic,"name")  
+                self.address    = self.check_key(  dic,"address") 
+                
+            db.session.add(self)
+            db.session.commit()
+            result=True
+        else:
+            print("---重複產出----")
+        return result
     def __repr__(self):
         return "Facility(id='%s', 名稱:'%s', 地址:'%s'" % (
                    self.id, self.name, self.address)
@@ -107,8 +183,47 @@ class TActivity(db.Model):
     nextstep=db.Column(db.Text)
     #supervisor的建議。
     recommand=db.Column(db.Text)
+    def check_key(self,dic,key):
+       
+        result=None
+        try:
+            result=dic[key]
+            if result == "NULLUSER":
+                result=None
+        except KeyError:
+            result=None
+        return result
+    def add_new(self,dic=None):
     
-
+        result=False
+        if dic:
+            id=self.check_key(  dic,"userid")
+        else:
+            id=self.id
+        if id is None:
+            print("錯誤ID",dic["userid"])
+            return result
+        
+        act=TActivity.query.filter_by(id=id).first()
+        if not act:
+            if dic:
+                self.id             = self.check_key(  dic,"id") 
+                self.ownerid        = self.check_key(  dic,"ownerid")  
+                self.facilityid     = self.check_key(  dic,"facilityid")  
+                self.customerList   = self.check_key(  dic,"customerList") 
+                self.starttime      = self.check_key(  dic,"starttime") 
+                self.endtime        = self.check_key(  dic,"endtime") 
+                self.nexttime       = self.check_key(  dic,"nexttime")  
+                self.type           = self.check_key(  dic,"type")  
+                self.description    = self.check_key(  dic,"description") 
+                self.nextstep       = self.check_key(  dic,"nextstep")  
+                self.recommand      = self.check_key(  dic,"recommand")  
+            db.session.add(self)
+            db.session.commit()
+            result=True
+        else:
+            print("---重複產出----")
+        return result
     
     def update(self):
         try:
