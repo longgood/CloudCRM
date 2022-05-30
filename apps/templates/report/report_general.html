@@ -19,10 +19,54 @@
 		  }
 		 
 		}
+	
+	</script>
+	<script>
+	window.onload=function(){
+		var editbtns=document.getElementsByClassName("edit_border")
+		var text_description=document.getElementsByClassName("description")
+		var text_nextstep=document.getElementsByClassName("nextstep")
+		
+		
+		var btn = document.getElementsByClassName("edit_border")[0];
+		var input = document.getElementsByClassName("edit_input")[0];
+		btn.addEventListener("click", function() {
+			input.style.display = "inline";
+			btn.text="happy"
+		});
+		input.addEventListener("blur", function() {
+			btn.innerText = this.value;
+			this.style.display = "none";
+			this.value = "";
+		});
+ 
+ 
+	}
+	
+	
+	
+	
 	</script>
 	
     <div class="py-4">
         
+		
+		<button class="edit_border">Click me</button>
+		<input class="edit_input" type="text" style="display:none">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
     </div>
     <div class="row">
         <div class="col-auto">
@@ -73,16 +117,15 @@
 											
 											
 											<div class="col-3">
-												<textarea name=description id="description_task" style="width:300px;height:200px;background-color:#FFF0D4;" >{{act.description|safe}}</textarea>
+												<textarea name=description id="description_task" class="description" style="width:300px;height:200px;background-color:#FFF0D4;" >{{act.description|safe}}</textarea>
 											</div>
 											<div class="col-3">
-												<textarea name=nextstep id="description_task" style="width:300px;height:200px;background-color:#FFF0D4;" >{{act.nextstep|safe}}</textarea>
+												<textarea name=nextstep id="nextstep" class="nextstep" style="width:300px;height:200px;background-color:#FFF0D4;" >{{act.nextstep|safe}}</textarea>
 
 											</div>
 											<div class="col-1">
-													
-													<button type="submit" name="modify" class="btn btn-gray-300">修改</button>
-												</div>
+													<button type="submit" name="modify" class="edit_border">修改</button>
+											</div>
 
 										</div>
 										</form>
