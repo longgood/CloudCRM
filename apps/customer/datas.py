@@ -194,17 +194,16 @@ class TCustomerData():
             msg=facilityname+customername+title+"新的拜訪資料已經建立!妳好棒!"
         return activity_form,msg
     def get_customer_activity_adding_mode(self,form,usermanager,isregister):
-        print("+++++++++++++++++++++++++++++++",form.customer_name)
+        print("+++++++++++++++++++++++++++++++客戶名稱:",form.customer_name)
         now_dt = datetime.today() 
         now_dt_format = now_dt.strftime('%Y-%m-%dT%H:%M')
         facility_name=""
         customer_title=""
-        
         cust=TCustomer.query.filter_by(name=form.customer_name).first()
         if cust:
             customer_title=cust.title
             fac=TFacility.query.filter_by(id=cust.facilityid).first()
-            print("-----------****有~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",fac)
+            print("-----------****有~~",cust.name,"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",fac)
             if fac:
                 print("輸出",fac)
                 facility_name=fac.name
@@ -218,7 +217,7 @@ class TCustomerData():
         
         activity_form,msg=self.cal_customer_activity_adding_mode(form,usermanager,isregister)
         result_facility=reportdata.cal_report_weekly(usermanager)
-
+    
         
         return render_template('customer/add_new_activity_adding_mode.html', form=activity_form,msg=msg,activity=result_facility)
     #後續跟進

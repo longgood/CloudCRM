@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 
-
+from werkzeug.utils import secure_filename
 #from apps import db
 from apps import db
 from apps.customer.datas import TCustomerData
@@ -96,3 +96,32 @@ def customer_search():
         result=result+r.name+"#"
     print("-------------result----------------",result)
     return result
+
+
+
+ALLOWED_EXTENSIONS = set(['pdf', 'png', 'jpg','JPG', 'jpeg', 'gif','lzma','pdf','json'])
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+import os         
+@blueprint.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    print("upload_file------------",request.method)
+    if request.method == 'POST':
+        file = request.files['file']
+        print("file:",file,",fname:",file.filename)
+        print("allow:",allowed_file(file.filename))
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            print("檔案名稱:",filename)
+            file.save('e:/test/',filename)
+            
+    return '''
+    <!doctype html>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <form action="" method=post enctype=multipart/form-data>
+      <p><input type=file name=file>
+         <input type=submit value=Upload>
+    </form>
+    '''
