@@ -52,8 +52,22 @@ class TData():
         act=TActivity.query.filter_by(id=activityid).first()
        
         return
-    def get_report_general(self,usermanager):
+    def get_report_general(self,usermanager,form):
         ownerid=usermanager.id
+        
+        #--1先修改---
+        if form:
+            print("0預備更新")
+        
+            act=TActivity.query.filter_by(id=form.activityid).first()
+            if act:
+                print("1.準備更新")
+                act.description=form.description
+                act.nextstep=form.nextstep  
+                act.commit_update()
+                print("已經更新")
+        
+        #--2抓值----
         acts=self.get_activity(ownerid)
         fac=self.get_facility()
         cust=self.get_customer(ownerid)
@@ -77,7 +91,6 @@ class TData():
         static["my_act_num"]=my_activity_number
         static["title_all_act_num"]=gettext("title_all_act_num")
         static["title_my_act_num"]=gettext("title_my_act_num")
-        print(static)
         return render_template('report/report_general.html',static=static,activity=acts,facility=fac,customer=cust,usermanager=usermanager)
     #產出每周的報表
     
@@ -133,9 +146,14 @@ class TData():
                 for a in acts:
                     #相同的機構
                     if main.facilityid == a.facilityid:
-                        #if a.facility is "龍骨王股份有限公司":
+                        
                         customer.append(a.customer)
                         fac["customer"]=fac["customer"]+"<strong>"+str(a.starttime).split(" ")[0]+":"+a.strtype+a.customer+"</strong><br>"+a.description+"<br><u>下一步</u><br>"+a.nextstep+"<br>"
+                        fac["facilityid"]=main.facilityid
+                        fac["customerid"]=main.customerList
+                        fac["activityid"]=main.id
+                        fac["type"]=main.type
+                        
                         customerN=customerN+1
                             
                 result_facility.append(fac)

@@ -1,9 +1,8 @@
 from apps.authentication.models import TFacility,TActivity,TCustomer
 #from apps import db
 from flask import render_template
-from datetime import datetime,timedelta
+from datetime import datetime , timedelta
 from apps.reports.datas import TData
-import datetime
 import random
 reportdata=TData()
 #所有資料的介面
@@ -69,7 +68,12 @@ class TCustomerData():
             customername=activity_form.customer_name
             title=activity_form.customer_title
             facility = TFacility.query.filter_by(name=facilityname).first()
+            
+            
+            
             starttime=datetime.strptime(activity_form.starttime, "%Y-%m-%dT%H:%M")
+            
+            
             day_delta=self.get_day_delta(activity_form.timedelta)
             minutes_delta=self.get_minutes_delta(activity_form.minutesdelta)
             type=self.get_type(activity_form.type)
@@ -191,7 +195,7 @@ class TCustomerData():
         return activity_form,msg
     def get_customer_activity_adding_mode(self,form,usermanager,isregister):
         print("+++++++++++++++++++++++++++++++",form.customer_name)
-        now_dt = datetime.datetime.today() 
+        now_dt = datetime.today() 
         now_dt_format = now_dt.strftime('%Y-%m-%dT%H:%M')
         facility_name=""
         customer_title=""
@@ -199,9 +203,10 @@ class TCustomerData():
         cust=TCustomer.query.filter_by(name=form.customer_name).first()
         if cust:
             customer_title=cust.title
-            fac=TFacility.query.filter_by(id=cust.facilityid)
+            fac=TFacility.query.filter_by(id=cust.facilityid).first()
             print("-----------****有~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",fac)
             if fac:
+                print("輸出",fac)
                 facility_name=fac.name
         
         form.facility_name=facility_name
@@ -209,7 +214,6 @@ class TCustomerData():
         form.starttime=now_dt_format
 
         form.type="手動輸入"
-        form.timedelta="一周後"
         form.minutesdelta="十分鐘"
         
         activity_form,msg=self.cal_customer_activity_adding_mode(form,usermanager,isregister)

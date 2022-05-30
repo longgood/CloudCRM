@@ -4,7 +4,7 @@
 #from apps import db
 
 from apps.reports.datas import TData
-
+from apps.reports.forms import ModifyActivityForm
 """
 龍骨王股份有限公司
 """
@@ -29,11 +29,15 @@ def reports():
     return render_template('home/report_general.html',
                             username=username,
                             patientlist=['陳阿帥','妳阿笨','天天才'])
-@blueprint.route('/report_general',methods=['GET'])
+@blueprint.route('/report_general',methods=['GET','POST'])
 @login_required
 def report_general():
     usermanager=current_user
+    #取得輸入表格資訊:
+    form=None
     
+    if "modify" in request.form:
+        form=ModifyActivityForm(request.form)
     #取得目前所有使用者資訊
     activityid=request.args.get('activityid')
     isdelete=request.args.get('isdelete')
@@ -43,7 +47,7 @@ def report_general():
         print("isdelete",isdelete,",data:",activityid)
         activityid=None
     
-    return data.get_report_general(usermanager)
+    return data.get_report_general(usermanager,form)
     
 
 @blueprint.route('/report_weekly')

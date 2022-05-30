@@ -231,6 +231,12 @@ class TActivity(db.Model):
             db.session.commit()
         except:
             print("--error--")
+    def commit_update(self):
+        try:
+            db.session.flush()
+            db.session.commit()
+        except:
+            print("--error--")
     def __init__(self, **kwargs):
         self.customerList=""
         return
