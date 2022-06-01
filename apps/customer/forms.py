@@ -20,13 +20,13 @@ class CreateActivityForm():
         self.starttime=""
         self.endtime=""
         self.type=0  
-        self.description=""    
+        self.description="none"    
         self.nextstep=""    
         self.recommand=""    
         self.timedelta="哇哈哈"
         self.minutesdelta="測試"
         
-        
+        print("value:",value)
         if 'facility_name' in value:
             self.facility_name=value['facility_name']
         if 'customer_name' in value:
@@ -50,38 +50,7 @@ class CreateActivityForm():
             self.timedelta=value['timedelta']    
         if 'minutesdelta' in value:
             self.minutesdelta=value['minutesdelta']   
-
-    """
-    ownerid=StringField('owner',id='owner_create',validators=[DataRequired()])
     
-    starttime=StringField('StartTime',id='starttime_create')
-    endtime=StringField('EndTime',id='endtime_create')
-    #甚麼樣類型的拜訪，0寫信，1.LINE，2.十分鐘內的通話，3.30分鐘的通話，4.會面半小時，5.面對面三人以上會議
-    type=StringField('type',id='type_create')
-    description=StringField('Description',id='description_create')
-    nextstep=StringField('NextStep',id='nextstep_create')
-    #supervisor的建議。
-    recommand=StringField('Recommand',id='recommand_create')
-    """
-    
-    
-    
-    
-    """
-    userid  =StringField('UserId',id='userid_create',validators=[DataRequired()])
-    email = StringField('Email',
-                      id='email_create',
-                      validators=[DataRequired(), Email()])
-    password = PasswordField('Password',
-                             id='pwd_create',
-                             validators=[DataRequired()])
-    realname = StringField('Realname',
-                         id='realname_create',
-                         validators=[DataRequired()])
-
-    jobtitle=StringField('JobTitle',id='jobtitle_create',validators=[DataRequired()])
-
-    """
 class CreateFacilityForm(FlaskForm):
     name  =StringField('Name',id='name_create',validators=[DataRequired()])
     address = StringField('Address',

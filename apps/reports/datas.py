@@ -102,24 +102,28 @@ class TData():
         
         start_day,end_day=self.get_duration_edge()
         
+
+        
         #--需要設定時間-----------
         new_act=[]
         for a in acts:
             
             day_diff=(a.starttime.day-start_day)
+            tmpday=(a.starttime-timedelta(days=start_day))
+            print(tmpday,"day diff:",day_diff,",startday:",start_day)
             if day_diff>=-1:
                 print("IN:",a.starttime)
                 new_act.append(a)
             else:
                 print("Out:",a.starttime)
-        acts=new_act
+        #acts=new_act #先不做時間限制
         #----------修訂相關-------------------
         for a in acts:
             customerid=a.customerList.split(";")[0]
             facilityid=a.facilityid
             type      =a.type
             customer_name=self.get_customer_name(customerid)
-            print(customer_name)
+            
             
             facility_name=self.get_facility_name(facilityid)
             acts[count].customerid=customerid
@@ -162,14 +166,13 @@ class TData():
         result_facility=self.cal_report_weekly(usermanager)
         return render_template('report/report_weekly.html',activity=result_facility)
     #取得期間的前後日期，現在已周為單位，之後再取得月。
+    #結果取到的值是絕對的日th, 不是差異。寫錯了。
     def get_duration_edge(self,duration="weekly"):
         now=datetime.now()
         last_start=now-timedelta(days=now.weekday()+7)
         last_end=now-timedelta(days=now.weekday()+1)
         this_start=now-timedelta(days=now.weekday())
         this_end=now-timedelta(days=now.weekday()-6)
-
-        
         cum_days=(now-this_start).days
         
         if cum_days<3:

@@ -106,7 +106,7 @@ class TCustomerData():
 
             act_count=TActivity.query.count()
             id=self.get_id(act_count)
-            print("id:",id)
+         
             act.id=id
             
             act.ownerid=usermanager.id
@@ -149,10 +149,9 @@ class TCustomerData():
                 fac.add_new()
                 #db.session.add(fac)
                 facility_id=fac.id
-                print(facilityname,"已經新建立!",fac)
+
             else:
                 facility_id=facility.id
-                print(facilityname+"的資料已經存在資料庫內")
             customer = TCustomer.query.filter_by(name=customername,title=title).first()
             if not customer:
                 customer=TCustomer()
@@ -163,7 +162,6 @@ class TCustomerData():
                 customer.facilityid=facility_id
                 customer.add_new()
                 #db.session.add(customer)
-                print(customername,"已經新增!",customer)
                 
             else:
                 print(customername+title+"的資料已經存在資料庫內!")
@@ -171,7 +169,6 @@ class TCustomerData():
 
             act_count=TActivity.query.count()
             id=self.get_id(act_count)
-            print("id:",id)
             act.id=id
             
             act.ownerid=usermanager.id
@@ -194,16 +191,16 @@ class TCustomerData():
             msg=facilityname+customername+title+"新的拜訪資料已經建立!妳好棒!"
         return activity_form,msg
     def get_customer_activity_adding_mode(self,form,usermanager,isregister):
-        print("+++++++++++++++++++++++++++++++客戶名稱:",form.customer_name)
+
         now_dt = datetime.today() 
         now_dt_format = now_dt.strftime('%Y-%m-%dT%H:%M')
         facility_name=""
         customer_title=""
         cust=TCustomer.query.filter_by(name=form.customer_name).first()
+        
         if cust:
             customer_title=cust.title
             fac=TFacility.query.filter_by(id=cust.facilityid).first()
-            print("-----------****有~~",cust.name,"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",fac)
             if fac:
                 print("輸出",fac)
                 facility_name=fac.name
@@ -216,6 +213,7 @@ class TCustomerData():
         form.minutesdelta="十分鐘"
         
         activity_form,msg=self.cal_customer_activity_adding_mode(form,usermanager,isregister)
+        
         result_facility=reportdata.cal_report_weekly(usermanager)
     
         
@@ -248,7 +246,6 @@ class TCustomerData():
             cust=TCustomer.query.filter_by(id=customerid).first()
             
             fac=TFacility.query.filter_by(id=act.facilityid).first()
-            print("final:",fac.name,":",cust.name,",",act.starttime,"=>",act.nexttime,"事情",act.nextstep)
         
         
         return ""

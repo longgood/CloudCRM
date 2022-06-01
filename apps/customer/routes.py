@@ -39,9 +39,10 @@ def customer_activity():
 @login_required
 def customer_activity_adding_mode():
     usermanager=current_user
+    
+
+    
     activity_form = CreateActivityForm(request.form)
-    print("看看不用錢:",activity_form.customer_title)
-    print("敘述:",activity_form.description)
     isregister=False
     if 'register' in request.form:
         isregister=True
