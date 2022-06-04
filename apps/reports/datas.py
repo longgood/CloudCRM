@@ -105,6 +105,7 @@ class TData():
 
         
         #--需要設定時間-----------
+        """
         new_act=[]
         for a in acts:
             
@@ -117,6 +118,7 @@ class TData():
             else:
                 print("Out:",a.starttime)
         #acts=new_act #先不做時間限制
+        """
         #----------修訂相關-------------------
         for a in acts:
             customerid=a.customerList.split(";")[0]
@@ -142,11 +144,16 @@ class TData():
                 fac=dict()
                 facility.append(main.facilityid)
                 fac["name"]=main.facility
-                
+
                 customer=[]
                 fac["customer"]=""
                 fac["customer_name"]=main.customer
                 customerN=0
+                
+                
+                
+                passdate=datetime(2013,1,13)
+                now=datetime.now()
                 for a in acts:
                     #相同的機構
                     if main.facilityid == a.facilityid:
@@ -157,9 +164,18 @@ class TData():
                         fac["customerid"]=main.customerList
                         fac["activityid"]=main.id
                         fac["type"]=main.type
+
+                        if a.nexttime>passdate:
+                            passdate=a.nexttime
+                            print(passdate)
+                        
+                        
                         
                         customerN=customerN+1
-                            
+                        
+                        
+                if passdate<=now:
+                    fac["name"]=fac["name"]+"<font color=\"red\">過期日:"+passdate.strftime("%m-%d")+"</font>"
                 result_facility.append(fac)
         return result_facility
     def get_report_weekly(self, usermanager):
