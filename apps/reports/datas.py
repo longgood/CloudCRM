@@ -103,8 +103,8 @@ class TData():
         start_day,end_day=self.get_duration_edge()
         
 
-        
         #--需要設定時間-----------
+        
         """
         new_act=[]
         for a in acts:
@@ -119,6 +119,33 @@ class TData():
                 print("Out:",a.starttime)
         #acts=new_act #先不做時間限制
         """
+        #--設定順序，並修改原有的acts-----------
+        facdic={}
+        for main in acts:
+            if main.facilityid not in facdic:
+                target_facility=main.facilityid
+                latest_date=datetime(1979,1,13)
+                for a in acts:
+                    if a.facilityid == target_facility:
+                        if a.nexttime>latest_date:
+                            latest_date=a.nexttime
+                facdic[main.facilityid]=latest_date
+                
+        faclist=sorted(facdic.items(), key=lambda x:x[1])
+        facdic={}
+        for f in faclist:
+            facdic[f[0]]=f[1]
+        new_act=[]
+        #-修改acts所有活動的順序了
+        for key, value in facdic.items():
+            for a in acts:
+                if a.facilityid == key:
+                    new_act.append(a)
+                    
+        acts=new_act
+        
+        
+        
         #----------修訂相關-------------------
         for a in acts:
             customerid=a.customerList.split(";")[0]
@@ -176,6 +203,8 @@ class TData():
                         
                 if passdate<=now:
                     fac["name"]=fac["name"]+"<font color=\"red\">過期日:"+passdate.strftime("%m-%d")+"</font>"
+                else:
+                    fac["name"]=fac["name"]+"追蹤日:"+passdate.strftime("%m-%d")
                 result_facility.append(fac)
         return result_facility
     def get_report_weekly(self, usermanager):
