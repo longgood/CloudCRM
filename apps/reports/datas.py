@@ -95,7 +95,7 @@ class TData():
         
     def reports_activity_update(self):
     
-        #result=db.engine.execute("ALTER TABLE TActivity ADD priority Integer")
+        result=db.engine.execute("ALTER TABLE TActivity ADD priority Integer")
         result=db.engine.execute("ALTER TABLE TActivity ADD winrate Integer")
         result=db.engine.execute("ALTER TABLE TActivity ADD customerType Integer")
         print(result)
