@@ -163,6 +163,7 @@ class TFacility(db.Model):
     def __repr__(self):
         return "Facility(id='%s', 名稱:'%s', 地址:'%s'" % (
                    self.id, self.name, self.address)
+import datetime
 #每一次地拜訪或是會晤都算是一個TActivity->多個TActivity組成一個TProjects
 class TActivity(db.Model):
 
@@ -177,12 +178,16 @@ class TActivity(db.Model):
     endtime=db.Column(db.DateTime)
     nexttime=db.Column(db.DateTime)
     #甚麼樣類型的拜訪，0寫信，1.LINE(訊息)，2.十分鐘內的通話，3.30分鐘的通話，4.會面，5.面對面三人以上會議，-99。再會。
-    
     type=db.Column(db.Integer)
     description=db.Column(db.Text)
     nextstep=db.Column(db.Text)
     #supervisor的建議。
     recommand=db.Column(db.Text)
+    
+    priority=db.Column(db.Integer,default=50)
+    winrate=db.Column(db.Integer,default=50)
+    customerType=db.Column(db.Integer,default=0)
+    
     def check_key(self,dic,key):
        
         result=None
@@ -193,6 +198,19 @@ class TActivity(db.Model):
         except KeyError:
             result=None
         return result
+        
+    def check_value(self,value):
+        
+        if value is None:
+            
+            if value ==self.type:
+                value=0
+            else:
+                value="None"
+        elif type(value)==datetime.datetime:
+            value=value.strftime("%Y/%m/%d:%H:%M:%S")
+        return value
+       
     def add_new(self,dic=None):
     
         result=False
@@ -240,6 +258,28 @@ class TActivity(db.Model):
     def __init__(self, **kwargs):
         self.customerList=""
         return
+        
+        
+
+    def get_dic(self):
+        dic={}
+        dic["id"]=self.check_value(self.id   )
+        dic["ownerid"]=self.check_value(self.ownerid       )
+        dic["facilityid"]=self.check_value(self.facilityid   )
+        
+        dic["customerList"]=self.check_value(self.customerList)
+        dic["endtime"]=self.check_value(self.endtime)
+        dic["nexttime"]=self.check_value(self.nexttime)
+        dic["starttime"]=self.check_value(self.starttime    )
+        
+        dic["type"]=self.check_value(self.type)
+        dic["description"]=self.check_value(self.description)
+        dic["nextstep"]=self.check_value(self.nextstep)
+        dic["recommand"]=self.check_value(self.recommand)
+        dic["priority"]=50
+        dic["winrate"]=50
+        dic["customerType"]=50
+        return dic
     def __repr__(self):
         
         return "<TActivity(id='%s',醫院公司:'%s' 顧客們='%s', 起始時間='%s',結束時間:'%s'description='%s')>" % (

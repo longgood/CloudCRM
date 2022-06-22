@@ -61,6 +61,31 @@ class TCustomerData():
             result=365
         
         return result
+    def get_priority(self,input):
+        print("回傳的數值:",input)
+        result=50
+        if input=="一般":
+            result=50
+        elif input=="高":
+            result=75
+        elif input=="低":
+            result=25
+        elif input=="超低":
+            result=0
+        elif input=="超高":
+            result=100
+        return result
+
+    def get_customertype(self,input):
+        result=0
+        if input=="臨床":
+            result=0
+        elif input=="投資人":
+            result=1
+        elif input=="經銷商":
+            result=2
+        return result
+
     def get_customer_activity(self,activity_form,usermanager,isregister):
         msg=None
         if isregister:
@@ -142,6 +167,11 @@ class TCustomerData():
             day_delta=self.get_day_delta(activity_form.timedelta)
             minutes_delta=self.get_minutes_delta(activity_form.minutesdelta)
             type=self.get_type(activity_form.type)
+            priority=self.get_priority(activity_form.priority)
+            winrate=self.get_priority(activity_form.winrate)
+            customerType=self.get_customertype(activity_form.customerType)
+            
+            
             if not facility:
                 fac=TFacility()
                 fac.id=self.get_id(TFacility.query.count())
@@ -182,8 +212,10 @@ class TCustomerData():
             act.type=type
             act.description=activity_form.description
             act.nextstep=activity_form.nextstep
-            act.recommand=""
-
+            act.recommand=activity_form.nextstep
+            act.priority=priority
+            act.winrate=winrate
+            act.customerType=customerType
             #supervisor的建議。
             act.status=0
             act.add_new()
@@ -191,7 +223,6 @@ class TCustomerData():
             msg=facilityname+customername+title+"新的拜訪資料已經建立!妳好棒!"
         return activity_form,msg
     def get_customer_activity_adding_mode(self,form,usermanager,isregister):
-
         now_dt = datetime.today() 
         now_dt_format = now_dt.strftime('%Y-%m-%dT%H:%M')
         facility_name=""
@@ -214,8 +245,7 @@ class TCustomerData():
         
         activity_form,msg=self.cal_customer_activity_adding_mode(form,usermanager,isregister)
         
-        result_facility=reportdata.cal_report_weekly(usermanager)
-    
+        result_facility=reportdata.cal_report_facility_user(usermanager)
         
         return render_template('customer/add_new_activity_adding_mode.html', form=activity_form,msg=msg,activity=result_facility)
     #後續跟進

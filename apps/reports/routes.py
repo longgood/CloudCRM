@@ -16,6 +16,19 @@ from flask_login import (
     current_user
 )
 data=TData()
+
+@blueprint.route('/reports_write')
+def reports_write():
+    data.write_activitylist()
+    return "寫出完成!"
+@blueprint.route('/reports_add_activity')
+def reports_read():
+    data.read_activitylist()
+    return "讀取完成!"
+@blueprint.route('/reports_activity_update')
+def reports_activity_update():
+    data.reports_activity_update()
+    return "Activity Update完成!"
 @blueprint.route('/reports_recovery')
 @login_required
 def reports_recovery():

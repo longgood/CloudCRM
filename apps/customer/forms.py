@@ -25,6 +25,9 @@ class CreateActivityForm():
         self.recommand=""    
         self.timedelta="哇哈哈"
         self.minutesdelta="測試"
+        self.priority="一般"
+        self.winrate="一般"
+        self.customerType="臨床"
         
         print("value:",value)
         if 'facility_name' in value:
@@ -50,6 +53,12 @@ class CreateActivityForm():
             self.timedelta=value['timedelta']    
         if 'minutesdelta' in value:
             self.minutesdelta=value['minutesdelta']   
+        if 'priority' in value:
+            self.priority=value['priority']   
+        if 'winrate' in value:
+            self.winrate=value['winrate']   
+        if 'minutesdelta' in value:
+            self.customerType=value['customerType']   
     
 class CreateFacilityForm(FlaskForm):
     name  =StringField('Name',id='name_create',validators=[DataRequired()])

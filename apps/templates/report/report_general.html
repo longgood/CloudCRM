@@ -109,7 +109,7 @@
 											
 												
 											</div>
-											<div class="col-2"><h6>{{act.strtype}}<br>{{ act.customer |safe}}<br>從{{act.starttime.strftime("%H")}}:{{act.starttime.strftime("%M")}}<br>到{{act.endtime.strftime("%H")}}:{{act.endtime.strftime("%M")}}</h6></div>
+											<div class="col-2"><h6>{{act.priority}}重要,{{act.winrate}}勝率	{{act.strtype}}<br>{{ act.customer |safe}}<br>從{{act.starttime.strftime("%H")}}:{{act.starttime.strftime("%M")}}<br>到{{act.endtime.strftime("%H")}}:{{act.endtime.strftime("%M")}}</h6></div>
 											<div class="col-1"><h6>{{ act.starttime.strftime("%m-%d") |safe}}<br>{{ act.nexttime.strftime("%m-%d") |safe}}</h6></div>
 											
 											
