@@ -57,7 +57,7 @@ class CreateActivityForm():
             self.priority=value['priority']   
         if 'winrate' in value:
             self.winrate=value['winrate']   
-        if 'minutesdelta' in value:
+        if 'customerType' in value:
             self.customerType=value['customerType']   
     
 class CreateFacilityForm(FlaskForm):
