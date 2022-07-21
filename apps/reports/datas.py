@@ -3,7 +3,7 @@ from flask import render_template
 from flask_babel import *
 from collections import OrderedDict
 from datetime import datetime,timedelta
-
+from werkzeug.datastructures import ImmutableMultiDict
 import json
 from apps import db
 #所有資料的介面
@@ -18,7 +18,7 @@ class TData():
     def __init__(self):
         return
     def get_activity(self,ownerid):
-        result=TActivity.query.filter(TActivity.ownerid==ownerid,TActivity.type>=0).all()
+        result=TActivity.query.filter(TActivity.ownerid==ownerid,TActivity.type>=0).order_by(TActivity.id.desc()).all()
         
         return result
     def get_all_activity_number(self):
@@ -52,7 +52,7 @@ class TData():
     
         return result
     def get_priority_str(self,input):
-        print("input:",input)
+        
         result="一般"
         if input==50:
             result="一般"
@@ -90,7 +90,7 @@ class TData():
         with open(path, 'r',encoding='UTF-8') as f:
             result=json.load(f)
         for r in result:
-            print(r)
+            print("actlist:",r)
         print("資料長度:",len(result))
         
     def reports_activity_update(self):
@@ -98,7 +98,7 @@ class TData():
         result=db.engine.execute("ALTER TABLE TActivity ADD priority Integer")
         result=db.engine.execute("ALTER TABLE TActivity ADD winrate Integer")
         result=db.engine.execute("ALTER TABLE TActivity ADD customerType Integer")
-        print(result)
+        print("result:",result)
         """
         result=TActivity.query.all()
         print("所有資料:",len(result))
@@ -120,6 +120,7 @@ class TData():
             act=TActivity.query.filter_by(id=form.activityid).first()
             if act:
                 print("1.準備更新")
+
                 act.description=form.description
                 act.nextstep=form.nextstep  
                 act.commit_update()
@@ -203,7 +204,7 @@ class TData():
         return acts
     #003調整機構資訊內容    
     def get_priority(self,input):
-        print("回傳的數值:",input)
+    
         result=50
         if input=="一般":
             result=50
@@ -256,7 +257,7 @@ class TData():
 
                         if a.nexttime>passdate:
                             passdate=a.nexttime
-                            print(passdate)
+
                         
                         
                         
@@ -400,7 +401,7 @@ class TData():
 
                         if a.nexttime>passdate:
                             passdate=a.nexttime
-                            print(passdate)
+                            print("passdate 2:",passdate)
                         
                         
                         

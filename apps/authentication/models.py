@@ -60,15 +60,14 @@ class TCustomer(db.Model):
     title = db.Column(db.String(64))    
     
     submanagers=db.Column(db.String(256))
-    def check_key(self,dic,key):
+    
+    def check_key(self,dic,key,value=None):
        
         result=None
         try:
             result=dic[key]
-            if result == "NULLUSER":
-                result=None
         except KeyError:
-            result=None
+            result=value
         return result
     def add_new(self,dic=None):
     
@@ -84,17 +83,17 @@ class TCustomer(db.Model):
         user=TCustomer.query.filter_by(id=id).first()
         if not user:
             if dic:
-                self.id          = self.check_key(  dic,"id") 
-                self.ownerid    = self.check_key(  dic,"ownerid")  
-                self.name  = self.check_key(  dic,"name")  
-                self.phone    = self.check_key(  dic,"phone") 
-                self.cellphone     = self.check_key(  dic,"cellphone") 
-                self.lineid      = self.check_key(  dic,"lineid") 
-                self.email      = self.check_key(  dic,"email")  
-                self.activityList      = self.check_key(  dic,"activityList")  
-                self.facilityid       = self.check_key(  dic,"phone") 
-                self.department  = self.check_key(  dic,"department")  
-                self.title      = self.check_key(  dic,"title")  
+                self.id             = self.check_key(  dic,"id") 
+                self.ownerid        = self.check_key(  dic,"ownerid")  
+                self.name           = self.check_key(  dic,"name")  
+                self.phone          = self.check_key(  dic,"phone") 
+                self.cellphone      = self.check_key(  dic,"cellphone") 
+                self.lineid         = self.check_key(  dic,"lineid") 
+                self.email          = self.check_key(  dic,"email")  
+                self.activityList   = self.check_key(  dic,"activityList")  
+                self.facilityid     = self.check_key(  dic,"phone") 
+                self.department     = self.check_key(  dic,"department")  
+                self.title          = self.check_key(  dic,"title")  
                 self.submanagers    = self.check_key(  dic,"submanagers")  
             db.session.add(self)
             db.session.commit()
@@ -126,15 +125,13 @@ class TFacility(db.Model):
 
                 setattr(self, property, value)
         return
-    def check_key(self,dic,key):
+    def check_key(self,dic,key,value=None):
        
         result=None
         try:
             result=dic[key]
-            if result == "NULLUSER":
-                result=None
         except KeyError:
-            result=None
+            result=value
         return result
     def add_new(self,dic=None):
     
@@ -188,16 +185,16 @@ class TActivity(db.Model):
     winrate=db.Column(db.Integer,default=50)
     customerType=db.Column(db.Integer,default=0)
     
-    def check_key(self,dic,key):
+    
+    def check_key(self,dic,key,value=None):
        
         result=None
         try:
             result=dic[key]
-            if result == "NULLUSER":
-                result=None
         except KeyError:
-            result=None
+            result=value
         return result
+    
         
     def check_value(self,value):
         
@@ -210,7 +207,71 @@ class TActivity(db.Model):
         elif type(value)==datetime.datetime:
             value=value.strftime("%Y/%m/%d:%H:%M:%S")
         return value
-       
+    ##--20220720 CloudMajesy的寫法。
+    def add_new(self,dic=None):
+    
+        result=False
+        id=self.check_key(  dic,"id")
+        if id is None:
+            print("錯誤ID",dic["id"])
+            return result
+            
+            
+            
+        act=TActivity.query.filter_by(id=id).first()
+        if not act:
+            if dic:
+                self.id             =self.check_key(dic,"id",self.id) 
+                self.ownerid        =self.check_key(dic,"ownerid",self.ownerid      )
+                self.facilityid     =self.check_key(dic,"facilityid",self.facilityid   )
+                self.customerList   =self.check_key(dic,"customerList",self.customerList )
+                self.starttime      =self.check_key(dic,"starttime",self.starttime    )
+                self.endtime        =self.check_key(dic,"endtime",self.endtime      )
+                self.nexttime       =self.check_key(dic,"nexttime"    ,self.nexttime     )
+                self.type           =self.check_key(dic,"type"        ,self.type         )
+                self.description    =self.check_key(dic,"description" ,self.description  )
+                self.nextstep       =self.check_key(dic,"nextstep"    ,self.nextstep     )
+                self.recommand      =self.check_key(dic,"recommand"   ,self.recommand    )
+                self.priority       =self.check_key(dic,"priority"    ,self.priority     )
+                self.winrate        =self.check_key(dic,"winrate"     ,self.winrate      )
+                self.customerType   =self.check_key(dic,"customerType",self.customerType )
+            db.session.add(self)
+            db.session.commit()
+            result=True
+            
+            new_act=TActivity.query.filter_by(id=id).first()
+            
+        result=True
+        return result
+    ##--20220720 CloudMajesy的寫法。
+    def update_new(self,dic=None):
+    
+        result=False
+        id=self.check_key(  dic,"id",self.id)
+        if id is None:
+            print("wrong ID",)
+            return result
+        self.id             =self.check_key(dic,"id",self.id) 
+        self.ownerid        =self.check_key(dic,"ownerid",self.ownerid      )
+        self.facilityid     =self.check_key(dic,"facilityid",self.facilityid   )
+        self.customerList   =self.check_key(dic,"customerList",self.customerList )
+        self.starttime      =self.check_key(dic,"starttime",self.starttime    )
+        self.endtime        =self.check_key(dic,"endtime",self.endtime      )
+        self.nexttime       =self.check_key(dic,"nexttime"    ,self.nexttime     )
+        self.type           =self.check_key(dic,"type"        ,self.type         )
+        self.description    =self.check_key(dic,"description" ,self.description  )
+        self.nextstep       =self.check_key(dic,"nextstep"    ,self.nextstep     )
+        self.recommand      =self.check_key(dic,"recommand"   ,self.recommand    )
+        self.priority       =self.check_key(dic,"priority"    ,self.priority     )
+        self.winrate        =self.check_key(dic,"winrate"     ,self.winrate      )
+        self.customerType   =self.check_key(dic,"customerType",self.customerType )
+        db.session.flush()
+        db.session.commit()
+        result=True
+        return result
+    
+    
+    """
     def add_new(self,dic=None):
     
         result=False
@@ -223,6 +284,7 @@ class TActivity(db.Model):
             return result
         
         act=TActivity.query.filter_by(id=id).first()
+        print("---actaddnew000 get data。",act,",id:",id,",dic:",dic)
         if not act:
             if dic:
                 self.id             = self.check_key(  dic,"id") 
@@ -236,19 +298,23 @@ class TActivity(db.Model):
                 self.description    = self.check_key(  dic,"description") 
                 self.nextstep       = self.check_key(  dic,"nextstep")  
                 self.recommand      = self.check_key(  dic,"recommand")  
+                print("---actaddnew001 data updated。")
             db.session.add(self)
             db.session.commit()
             result=True
+            print("---actaddnew002看起來有更新到。")
         else:
             print("---重複產出----")
         return result
-    
+    """
     def update(self):
         try:
             db.session.flush()
             db.session.commit()
+            print("activity updated")
         except:
             print("--error--")
+        
     def commit_update(self):
         try:
             db.session.flush()

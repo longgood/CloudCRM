@@ -93,9 +93,6 @@ class TCustomerData():
             customername=activity_form.customer_name
             title=activity_form.customer_title
             facility = TFacility.query.filter_by(name=facilityname).first()
-            
-            
-            
             starttime=datetime.strptime(activity_form.starttime, "%Y-%m-%dT%H:%M")
             
             
@@ -110,6 +107,7 @@ class TCustomerData():
                 fac.name=facilityname
                 fac.add_new()
                 facility_id=fac.id
+                print("facility add")
             else:
                 facility_id=facility.id
 
@@ -122,18 +120,22 @@ class TCustomerData():
                 customer.title=title
                 customer.facilityid=facility_id
                 customer.add_new()
-                
+                print("customer add")
                 
                 
             else:
                 print(customername+title+"的資料已經存在資料庫內!")
             act=TActivity()
-
             act_count=TActivity.query.count()
             id=self.get_id(act_count)
          
-            act.id=id
+            actdic={"id":id,"ownerid":usermanager.id,"facilityid":facility_id,"customerList":str(customer.id)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
+                    "nexttime":timedelta(days=day_delta)+starttime,"type":type,"description":activity_form.description,"nextstep":activity_form.nextstep,"recommand":"","status":0,
+                    "winrate":50,"priority":50,"customerType":0}
             
+            act.add_new(actdic)
+            """
+            act.id=id
             act.ownerid=usermanager.id
             act.facilityid=facility_id
             act.customerList=str(customer.id)+";"
@@ -146,18 +148,19 @@ class TCustomerData():
             act.description=activity_form.description
             act.nextstep=activity_form.nextstep
             act.recommand=""
-
             #supervisor的建議。
             act.status=0
-            act.add_new()
+            act.update()
             #db.session.add(act)    
             #db.session.commit()
+            """
             msg=facilityname+customername+title+"新的拜訪資料已經建立!妳好棒!"
             
                             
         return render_template('customer/add_new_activity.html', form=activity_form,msg=msg)
     def cal_customer_activity_adding_mode(self,activity_form,usermanager,isregister):
         msg=None
+        print("--001cal_customer_activity_adding_mode--",isregister)
         if isregister:
             facilityname=activity_form.facility_name
             customername=activity_form.customer_name
@@ -171,7 +174,8 @@ class TCustomerData():
             winrate=self.get_priority(activity_form.winrate)
             customerType=self.get_customertype(activity_form.customerType)
             
-            
+            print("--002 cal_customer_activity_adding_mode:Facility:",facility)
+        
             if not facility:
                 fac=TFacility()
                 fac.id=self.get_id(TFacility.query.count())
@@ -179,10 +183,12 @@ class TCustomerData():
                 fac.add_new()
                 #db.session.add(fac)
                 facility_id=fac.id
+                print("--002沒有facility")
 
             else:
                 facility_id=facility.id
             customer = TCustomer.query.filter_by(name=customername,title=title).first()
+            print("姓名:",customername,",取得:",customer.name)
             if not customer:
                 customer=TCustomer()
                 customer.id=self.get_id(TCustomer.query.count())
@@ -191,34 +197,25 @@ class TCustomerData():
                 customer.title=title
                 customer.facilityid=facility_id
                 customer.add_new()
+                
+                
+
                 #db.session.add(customer)
                 
             else:
                 print(customername+title+"的資料已經存在資料庫內!")
+           
+            
+            
             act=TActivity()
-
             act_count=TActivity.query.count()
             id=self.get_id(act_count)
-            act.id=id
+         
+            actdic={"id":id,"ownerid":usermanager.id,"facilityid":facility_id,"customerList":str(customer.id)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
+                    "nexttime":timedelta(days=day_delta)+starttime,"type":type,"description":activity_form.description,"nextstep":activity_form.nextstep,"recommand":"","status":0,
+                    "winrate":winrate,"priority":priority,"customerType":customerType}
             
-            act.ownerid=usermanager.id
-            act.facilityid=facility_id
-            act.customerList=str(customer.id)+";"
-            act.starttime=starttime
-            act.endtime=starttime+timedelta(minutes=minutes_delta)
-            
-            delta = timedelta(days=day_delta)
-            act.nexttime=delta+starttime
-            act.type=type
-            act.description=activity_form.description
-            act.nextstep=activity_form.nextstep
-            act.recommand=activity_form.nextstep
-            act.priority=priority
-            act.winrate=winrate
-            act.customerType=customerType
-            #supervisor的建議。
-            act.status=0
-            act.add_new()
+            act.add_new(actdic)
            
             msg=facilityname+customername+title+"新的拜訪資料已經建立!妳好棒!"
         return activity_form,msg
@@ -235,6 +232,10 @@ class TCustomerData():
             if fac:
                 print("輸出",fac)
                 facility_name=fac.name
+            else:
+                print("Fail Facility")
+        else:
+            print("Fail Customer")
         
         form.facility_name=facility_name
         form.customer_title=customer_title
@@ -244,8 +245,9 @@ class TCustomerData():
         form.minutesdelta="十分鐘"
         
         activity_form,msg=self.cal_customer_activity_adding_mode(form,usermanager,isregister)
-        
+        print("check001-activityform:",activity_form)
         result_facility=reportdata.cal_report_facility_user(usermanager)
+        print("check002")
         
         return render_template('customer/add_new_activity_adding_mode.html', form=activity_form,msg=msg,activity=result_facility)
     #後續跟進

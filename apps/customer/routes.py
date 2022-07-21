@@ -31,7 +31,7 @@ def customer_followup():
 def customer_activity():
     usermanager=current_user
     activity_form = CreateActivityForm(request.form)
-    print("資料表格:",activity_form)
+    
     isregister=False
     if 'register' in request.form:
         isregister=True

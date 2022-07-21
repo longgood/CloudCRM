@@ -51,6 +51,7 @@ def report_general():
     
     if "modify" in request.form:
         form=ModifyActivityForm(request.form)
+
     #取得目前所有使用者資訊
     activityid=request.args.get('activityid')
     isdelete=request.args.get('isdelete')
