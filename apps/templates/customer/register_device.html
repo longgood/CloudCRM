@@ -1,0 +1,125 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} 新增機台 {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+	
+    <div class="py-4">
+        
+		
+	
+
+    </div>
+	<div class="row">
+    <div class="col-12 mb-4">
+    <div class="card bg-yellow-100 border-0 shadow">
+	<div class="row">
+					<div class="col-md-8 col-sm-12">
+
+							<div class="col">      
+
+								
+									<div class="col-12">
+										
+										輸入MAC、客戶/經銷商代號
+										<div class="box">
+										  <div class="container-1">
+											<span class="icon"><i class="fa fa-search"></i></span>
+											<form method="post">
+												<input type="search" placeholder="Search..." name="user">
+												<input type="submit" name="send" value="send">
+											</form>	
+										  </div>
+										</div>
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										<div class="card-header d-sm-flex flex-row align-items-center flex-0">
+										</div>
+										
+									</div>
+							</div>
+					</div>
+	</div>
+	</div>	
+	</div>
+	</div>	
+	
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card bg-yellow-100 border-0 shadow">
+                <div class="card-header d-sm-flex flex-row align-items-center flex-0">
+                </div>
+				
+					
+				
+				  <div class="row">
+					<div class="col-md-8 col-sm-12">
+
+							<div class="col">      
+
+								
+									<div class="col-12">
+										<div class="row">
+											<div class="col-1"><h6><strong>序</strong></h6></div>
+											<div class="col-3"><h6>機構名稱</h6></div>
+											<div class="col-8"><h6>拜訪內容</h6></div>
+										</div>
+										<div class="card-header d-sm-flex flex-row align-items-center flex-0">
+										</div>
+										{% block adding_modecontent %}
+										{% for act in activity %}
+										<div>
+										<div class="row">
+											<div class="col-1"><h6><strong>{{loop.index}}</strong></h6></div>
+											<div class="col-3"><h6>{{ act.name |safe}}</h6></div>
+											<div class="col-8"><h6>{{ act.customer |safe}}</h6>
+											<br>
+											
+
+											</div>
+											
+											
+											</div>											
+										</div>
+										    
+										
+										
+										
+									</div>
+										{% endfor %}
+										{% endblock adding_modecontent %}
+							</div>
+						</div>
+					</div>
+					  
+					<div class="col">
+					  
+					</div>
+				  </div>
+					</div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+   
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

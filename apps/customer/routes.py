@@ -99,8 +99,15 @@ def customer_search():
     print("-------------result----------------",result)
     return result
 
-
-
+@blueprint.route('/register_device',methods=['GET','POST'])
+@login_required
+def register_device():
+    name=None
+    if request.method =='POST':
+        if request.values['send']=='send':
+            if "user" in request.values:
+                name=request.values['user']
+    return data.get_new_device(name)
 ALLOWED_EXTENSIONS = set(['pdf', 'png', 'jpg','JPG', 'jpeg', 'gif','lzma','pdf','json'])
 def allowed_file(filename):
     return '.' in filename and \

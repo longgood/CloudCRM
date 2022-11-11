@@ -281,3 +281,8 @@ class TCustomerData():
         
         
         return ""
+    def get_new_device(self,name):
+
+        
+        
+        return render_template('customer/register_device.html')
