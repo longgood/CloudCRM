@@ -17,8 +17,8 @@ def alter_db():
     result=db.engine.execute("ALTER TABLE TProject ADD winrate Integer")
     result=db.engine.execute("ALTER TABLE TProject ADD priority Integer")
     """
-    result=db.engine.execute("ALTER TABLE TProject ADD startTime DATETIME ")
-    result=db.engine.execute("ALTER TABLE TProject ADD endTime DATETIME ")
+    result=db.engine.execute("ALTER TABLE TProject ADD startTime Integer")
+    result=db.engine.execute("ALTER TABLE TProject ADD endTime Integer")
     return "updated"
 
 @blueprint.route('/index')

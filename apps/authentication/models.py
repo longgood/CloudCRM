@@ -271,42 +271,6 @@ class TActivity(db.Model):
         return result
     
     
-    """
-    def add_new(self,dic=None):
-    
-        result=False
-        if dic:
-            id=self.check_key(  dic,"userid")
-        else:
-            id=self.id
-        if id is None:
-            print("錯誤ID",dic["userid"])
-            return result
-        
-        act=TActivity.query.filter_by(id=id).first()
-        print("---actaddnew000 get data。",act,",id:",id,",dic:",dic)
-        if not act:
-            if dic:
-                self.id             = self.check_key(  dic,"id") 
-                self.ownerid        = self.check_key(  dic,"ownerid")  
-                self.facilityid     = self.check_key(  dic,"facilityid")  
-                self.customerList   = self.check_key(  dic,"customerList") 
-                self.starttime      = self.check_key(  dic,"starttime") 
-                self.endtime        = self.check_key(  dic,"endtime") 
-                self.nexttime       = self.check_key(  dic,"nexttime")  
-                self.type           = self.check_key(  dic,"type")  
-                self.description    = self.check_key(  dic,"description") 
-                self.nextstep       = self.check_key(  dic,"nextstep")  
-                self.recommand      = self.check_key(  dic,"recommand")  
-                print("---actaddnew001 data updated。")
-            db.session.add(self)
-            db.session.commit()
-            result=True
-            print("---actaddnew002看起來有更新到。")
-        else:
-            print("---重複產出----")
-        return result
-    """
     def update(self):
         try:
             db.session.flush()
@@ -351,7 +315,10 @@ class TActivity(db.Model):
         return "<TActivity(id='%s',醫院公司:'%s' 顧客們='%s', 起始時間='%s',結束時間:'%s'description='%s')>" % (
                    self.id,self.facilityid, self.customerList, self.starttime,self.endtime,self.description)
                    
-
+class TDevice(db.Model):
+    __tablename__ = 'TDevice'
+    id = db.Column(db.Integer, primary_key=True)
+    
 #由多個TActivity所組成。
 class TProject(db.Model):
     __tablename__ = 'TProject'
@@ -366,6 +333,16 @@ class TProject(db.Model):
     activityList=db.Column(db.String(4069))
     #哪一個機構
     facilityid=db.Column(db.String(64))
+    
+    #此次活動延續自何者?之前的活動，可以視為子TProject, 過去紀錄的查詢。
+    parentid=db.Column(db.Integer)
+    
+    
+    startTime=db.Column(db.DateTime)
+    endTime=db.Column(db.DateTime)
+    budge=db.Column(db.Integer)
+    winrate=db.Column(db.Integer)
+    priority=db.Column(db.Integer)
     
     def __init__(self):
         return

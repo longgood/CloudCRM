@@ -1,4 +1,4 @@
-from apps.authentication.models import TFacility,TActivity,TCustomer
+from apps.authentication.models import TFacility,TActivity,TCustomer, TProject
 from flask import render_template
 from flask_babel import *
 from collections import OrderedDict
@@ -21,6 +21,8 @@ class TData():
         result=TActivity.query.filter(TActivity.ownerid==ownerid,TActivity.type>=0).order_by(TActivity.id.desc()).all()
         
         return result
+    def get_all_project_number(self):
+        return TProject.query.count()
     def get_all_activity_number(self):
         return TActivity.query.count()
         
@@ -127,6 +129,7 @@ class TData():
                 print("已經更新")
         
         #--2抓值----
+        
         acts=self.get_activity(ownerid)
         fac=self.get_facility()
         cust=self.get_customer(ownerid)
@@ -145,6 +148,8 @@ class TData():
             count=count+1
             
         #---統計資料--------------------
+        all_project_number=self.get_all_project_number()
+        print("=======",all_project_number)
         all_activity_number=self.get_all_activity_number()
         my_activity_number=count
         static={}
