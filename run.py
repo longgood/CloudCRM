@@ -12,16 +12,21 @@ from apps import create_app, db
 
 # WARNING: Don't run with debug turned on in production!
 print("before DEBUG config")
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 # The configuration
 get_config_mode = 'Debug' if DEBUG else 'Production'
 
+
+##--測試
+#get_config_mode ='Production'
+
+print("ray:get_config_mode:",get_config_mode.capitalize())
 try:
 
     # Load the configuration using the default values
     app_config = config_dict[get_config_mode.capitalize()]
-    print("app_configed")
+    
 except KeyError:
     exit('Error: Invalid <config_mode>. Expected values [Debug, Production] ')
 app = create_app(app_config)
