@@ -36,6 +36,9 @@ class Users(db.Model, UserMixin):
 
             setattr(self, property, value)
 
+    def __init__(self, my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])
     def __repr__(self):
         value="姓名:'%s',id='%s',userid='%s',  職稱:'%s'" % (
                    self.realname,self.id, self.userid, self.jobtitle) 
@@ -60,6 +63,10 @@ class TCustomer(db.Model):
     title = db.Column(db.String(64))    
     
     submanagers=db.Column(db.String(256))
+    
+    
+    def to_dict(self):
+       return {c.name: getattr(self, c.name) for c in self.__table__.columns}
     
     def check_key(self,dic,key,value=None):
        
@@ -103,6 +110,9 @@ class TCustomer(db.Model):
         return result
     def __init__(self):
         return
+    def __init__(self, my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])
     def __repr__(self):
         return "Customer(id='%s', 名稱:'%s', 職稱:'%s'" % (
                    self.id, self.name, self.title) 
@@ -125,6 +135,9 @@ class TFacility(db.Model):
 
                 setattr(self, property, value)
         return
+    def __init__(self, my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])
     def check_key(self,dic,key,value=None):
        
         result=None
@@ -160,11 +173,15 @@ class TFacility(db.Model):
     def __repr__(self):
         return "Facility(id='%s', 名稱:'%s', 地址:'%s'" % (
                    self.id, self.name, self.address)
+    def to_dict(self):
+       return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+       #return self.name
 import datetime
 #每一次地拜訪或是會晤都算是一個TActivity->多個TActivity組成一個TProjects
 class TActivity(db.Model):
 
     __tablename__ = 'TActivity'
+       #return self.name
     id = db.Column(db.Integer, primary_key=True)
     #我們這邊誰發起或是負責這項活動。
     ownerid=db.Column(db.String(64))
@@ -288,7 +305,9 @@ class TActivity(db.Model):
     def __init__(self, **kwargs):
         self.customerList=""
         return
-        
+    def __init__(self, my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])    
         
 
     def get_dic(self):
@@ -314,10 +333,16 @@ class TActivity(db.Model):
         
         return "<TActivity(id='%s',醫院公司:'%s' 顧客們='%s', 起始時間='%s',結束時間:'%s'description='%s')>" % (
                    self.id,self.facilityid, self.customerList, self.starttime,self.endtime,self.description)
-                   
+    """
+    def to_dict(self):
+       return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+    """
+        
 class TDevice(db.Model):
     __tablename__ = 'TDevice'
     id = db.Column(db.Integer, primary_key=True)
+    def to_dict(self):
+       return {c.name: getattr(self, c.name) for c in self.__table__.columns}
     
 #由多個TActivity所組成。
 class TProject(db.Model):
@@ -348,6 +373,9 @@ class TProject(db.Model):
         return
     def __repr__(self):
         return
+    def to_dict(self):
+       return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+    
 @login_manager.user_loader
 def user_loader(id):
     return Users.query.filter_by(id=id).first()

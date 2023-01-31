@@ -19,10 +19,19 @@ from flask_login import (
     current_user
 )
 data=TCustomerData()
-
+import apps.customer.ExportScript as export
+@blueprint.route('/export_database')
+def export_database():
+    string=export.crm_database()
+    return string
+@blueprint.route('/read_database')
+def read_database():
+    string=export.crm_read()
+    return string    
 @blueprint.route('/customer_followup')
 @login_required
 def customer_followup():
+    print("customer_followup")
     usermanager=current_user
     return data.get_customer_followup(usermanager)
     
