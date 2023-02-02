@@ -1,4 +1,4 @@
-from apps.authentication.models import TFacility,TActivity,TCustomer, TProject
+from apps.authentication.models import TFacility,TVisiting,TCustomer, TProject
 from flask import render_template
 from flask_babel import *
 from collections import OrderedDict
@@ -18,13 +18,13 @@ class TData():
     def __init__(self):
         return
     def get_activity(self,ownerid):
-        result=TActivity.query.filter(TActivity.ownerid==ownerid,TActivity.type>=0).order_by(TActivity.id.desc()).all()
+        result=TVisiting.query.filter(TVisiting.ownerid==ownerid,TVisiting.type>=0).order_by(TVisiting.id.desc()).all()
         
         return result
     def get_all_project_number(self):
         return TProject.query.count()
     def get_all_activity_number(self):
-        return TActivity.query.count()
+        return TVisiting.query.count()
         
     def get_facility(self):
         result=TFacility.query.all()
@@ -69,17 +69,17 @@ class TData():
     
         return result
     def hide_activity(self,activityid):
-        act=TActivity.query.filter_by(id=activityid).first()
+        act=TVisiting.query.filter_by(id=activityid).first()
         if act:
 
             act.type=-99
             act.update()
         
-        act=TActivity.query.filter_by(id=activityid).first()
+        act=TVisiting.query.filter_by(id=activityid).first()
        
         return
     def write_activitylist(self):
-        result=TActivity.query.all()
+        result=TVisiting.query.all()
         
         result=json.dumps(result, default=ActivityToDict,ensure_ascii=False)
         
@@ -97,18 +97,18 @@ class TData():
         
     def reports_activity_update(self):
     
-        result=db.engine.execute("ALTER TABLE TActivity ADD priority Integer")
-        result=db.engine.execute("ALTER TABLE TActivity ADD winrate Integer")
-        result=db.engine.execute("ALTER TABLE TActivity ADD customerType Integer")
+        result=db.engine.execute("ALTER TABLE TVisiting ADD priority Integer")
+        result=db.engine.execute("ALTER TABLE TVisiting ADD winrate Integer")
+        result=db.engine.execute("ALTER TABLE TVisiting ADD customerType Integer")
         print("result:",result)
         """
-        result=TActivity.query.all()
+        result=TVisiting.query.all()
         print("所有資料:",len(result))
         
         for me in result:
             db.session.delete(me)
         db.session.commit()
-        result=TActivity.query.all()
+        result=TVisiting.query.all()
         print("所有資料:",len(result))
         
         return "完成!"
@@ -119,7 +119,7 @@ class TData():
         if form:
             print("0預備更新")
         
-            act=TActivity.query.filter_by(id=form.activityid).first()
+            act=TVisiting.query.filter_by(id=form.activityid).first()
             if act:
                 print("1.準備更新")
 
@@ -443,7 +443,7 @@ class TData():
     
     
     def report_recovery(self):
-        result=TActivity.query.filter(TActivity.type <=0).all()
+        result=TVisiting.query.filter(TVisiting.type <=0).all()
         
         for r in result:
             r.type=0

@@ -1,4 +1,4 @@
-from apps.authentication.models import TFacility,TActivity,TCustomer
+from apps.authentication.models import TFacility,TVisiting,TCustomer
 #from apps import db
 from flask import render_template
 from datetime import datetime , timedelta
@@ -125,8 +125,8 @@ class TCustomerData():
                 
             else:
                 print(customername+title+"的資料已經存在資料庫內!")
-            act=TActivity()
-            act_count=TActivity.query.count()
+            act=TVisiting()
+            act_count=TVisiting.query.count()
             id=self.get_id(act_count)
          
             actdic={"id":id,"ownerid":usermanager.id,"facilityid":facility_id,"customerList":str(customer.id)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
@@ -207,8 +207,8 @@ class TCustomerData():
            
             
             
-            act=TActivity()
-            act_count=TActivity.query.count()
+            act=TVisiting()
+            act_count=TVisiting.query.count()
             id=self.get_id(act_count)
          
             actdic={"id":id,"ownerid":usermanager.id,"facilityid":facility_id,"customerList":str(customer.id)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
@@ -253,7 +253,7 @@ class TCustomerData():
     #後續跟進
     def get_customer_followup(self,usermanager):
         ownerid=usermanager.id
-        result=TActivity.query.filter(TActivity.ownerid==ownerid,TActivity.nexttime>timedelta(days=1) ).all()
+        result=TVisiting.query.filter(TVisiting.ownerid==ownerid,TVisiting.nexttime>timedelta(days=1) ).all()
         cust_followed=[]
         actlist=[]
         for r in result:
@@ -261,7 +261,7 @@ class TCustomerData():
             customerid=r.customerList.split(";")[0]
             if customerid not in cust_followed:
                 cust_followed.append(customerid)
-                followed=TActivity.query.filter(TActivity.ownerid==ownerid,TActivity.customerList==r.customerList,TActivity.starttime>r.starttime  ).first()
+                followed=TVisiting.query.filter(TVisiting.ownerid==ownerid,TVisiting.customerList==r.customerList,TVisiting.starttime>r.starttime  ).first()
                 if followed:
                     customerid=followed.customerList.split(";")[0]
                     cust=TCustomer.query.filter_by(id=customerid).first()

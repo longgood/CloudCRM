@@ -11,7 +11,7 @@ import random
 龍骨王股份有限公司
 """
 from apps.customer.forms import CreateFacilityForm,CreateCustomerForm,CreateActivityForm
-from apps.authentication.models import TFacility,TActivity,TCustomer
+from apps.authentication.models import TFacility,TVisiting,TCustomer
 from apps.customer import blueprint
 from flask import render_template, redirect, url_for,request
 from flask_login import (
@@ -20,6 +20,11 @@ from flask_login import (
 )
 data=TCustomerData()
 import apps.customer.ExportScript as export
+@blueprint.route('/relation_database')
+def relation_database():
+    string=export.rela_test()
+    return string
+
 @blueprint.route('/export_database')
 def export_database():
     string=export.crm_database()

@@ -16,12 +16,21 @@ class Users(db.Model, UserMixin):
     password    = db.Column(db.LargeBinary)
     realname    = db.Column(db.String(64))
     jobtitle    = db.Column(db.String(64))
+    
+    
     #往下管理那些公司內成員
     userList= db.Column(db.String(64))
     #負責的相關客戶
     customerList= db.Column(db.String(64))
     #負責的相關機構
     facilityList= db.Column(db.String(64))
+    
+    
+    #-202301新增(嘗試)
+    #boss=db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=True)
+    #staff=db.relationship("Users",remote_side=[id],backref='Users.boss')#backref=backref("boss",remote_side=[id]))
+    #staff=db.relationship("Users",remote_side=[id])#backref=backref("boss",remote_side=[id]))
+    
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
             # depending on whether value is an iterable or not, we must
@@ -40,7 +49,7 @@ class Users(db.Model, UserMixin):
         for key in my_dict:
             setattr(self, key, my_dict[key])
     def __repr__(self):
-        value="姓名:'%s',id='%s',userid='%s',  職稱:'%s'" % (
+        value="姓名:'%s',id='%s',userid='%s',  職稱:'%s',老闆:'%s',員工:'%s'" % (
                    self.realname,self.id, self.userid, self.jobtitle) 
         
         return value
@@ -64,6 +73,9 @@ class TCustomer(db.Model):
     
     submanagers=db.Column(db.String(256))
     
+    
+    #--202302新增
+    fid = db.Column(db.Integer, db.ForeignKey('TFacility.id'))
     
     def to_dict(self):
        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -113,17 +125,28 @@ class TCustomer(db.Model):
     def __init__(self, my_dict):
         for key in my_dict:
             setattr(self, key, my_dict[key])
+    """
     def __repr__(self):
-        return "Customer(id='%s', 名稱:'%s', 職稱:'%s'" % (
-                   self.id, self.name, self.title) 
-        
-    
+        return "Customer(id='%s', 名稱:'%s', 職稱:'%s',對應的機構:'%s',拜訪:'%s'" % (
+                   self.id, self.name, self.title,self.fid,self.visiting) 
+    """ 
+    def __repr__(self):
+        return "Customer(拜訪:'%s'" % (self.visiting) 
 class TFacility(db.Model):
     __tablename__ = 'TFacility'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
     address=db.Column(db.String(64))
+
+
+
+
+
+    #--202302新增
+    add_to_customer = db.relationship("TCustomer", backref="TFacility")
+
+
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
                 # depending on whether value is an iterable or not, we must
@@ -135,6 +158,7 @@ class TFacility(db.Model):
 
                 setattr(self, property, value)
         return
+
     def __init__(self, my_dict):
         for key in my_dict:
             setattr(self, key, my_dict[key])
@@ -171,16 +195,22 @@ class TFacility(db.Model):
             print("---重複產出----")
         return result
     def __repr__(self):
-        return "Facility(id='%s', 名稱:'%s', 地址:'%s'" % (
-                   self.id, self.name, self.address)
+        return "Facility(id='%s', 名稱:'%s', 地址:'%s', 屬於客戶:'%s'" % (
+                   self.id, self.name, self.address,self.add_to_customer)
     def to_dict(self):
        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
        #return self.name
 import datetime
 #每一次地拜訪或是會晤都算是一個TActivity->多個TActivity組成一個TProjects
-class TActivity(db.Model):
+relations = db.Table('relations',
+                     db.Column('visiting_id', db.Integer, db.ForeignKey('TVisiting.id')),
+                     db.Column('customer_id', db.Integer, db.ForeignKey('TCustomer.id'))
+                     )
+class TEvent(db.Model):
 
-    __tablename__ = 'TActivity'
+#class TActivity(db.Model):
+
+    __tablename__ = 'TVisiting'
        #return self.name
     id = db.Column(db.Integer, primary_key=True)
     #我們這邊誰發起或是負責這項活動。
@@ -200,8 +230,13 @@ class TActivity(db.Model):
     
     priority=db.Column(db.Integer,default=50)
     winrate=db.Column(db.Integer,default=50)
-    customerType=db.Column(db.Integer,default=0)
+    customerType=db.Column(db.Integer,default=0)    
     
+    
+    
+    ##--202301全部放在這搞定
+    customerList = db.relationship('TCustomer', secondary=relations, lazy='subquery', 
+                               backref=db.backref('visiting', lazy=True))
     
     def check_key(self,dic,key,value=None):
        
@@ -331,8 +366,8 @@ class TActivity(db.Model):
         return dic
     def __repr__(self):
         
-        return "<TActivity(id='%s',醫院公司:'%s' 顧客們='%s', 起始時間='%s',結束時間:'%s'description='%s')>" % (
-                   self.id,self.facilityid, self.customerList, self.starttime,self.endtime,self.description)
+        return "<TActivity(id='%s',醫院公司:'%s' 顧客們='%s', 起始時間='%s',結束時間:'%s',description='%s',Customer='%s')>" % (
+                   self.id,self.facilityid, self.customerList, self.starttime,self.endtime,self.description,self.customer)
     """
     def to_dict(self):
        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
