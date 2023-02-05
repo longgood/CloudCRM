@@ -60,7 +60,7 @@ def report_general():
         data.hide_activity(activityid)
         print("isdelete",isdelete,",data:",activityid)
         activityid=None
-    
+    print("---Form:",form)
     return data.get_report_general(usermanager,form)
     
 

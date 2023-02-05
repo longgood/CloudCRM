@@ -1,10 +1,15 @@
 import json
+from datetime import datetime
+folder="D:\\Dropbox\\tmpp202301\\goodbackup\\"
 class DatetimeEncoder(json.JSONEncoder):
     def default(self, obj):
         try:
             return super().default(obj)
         except TypeError:
             return str(obj)
+def testdisp_database():
+    
+    return "測試是否進入網站"
 def export_class(item,filename="typename"):
     file = open(filename+".txt", "w",encoding='UTF-8')
     for f in item:
@@ -14,28 +19,80 @@ def export_class(item,filename="typename"):
         file.writelines(str+"\n")
     file.close()
 
-from apps.authentication.models import TFacility,TVisiting,TCustomer,TProject,TDevice,Users
+from apps.authentication.models import TFacility,TEvent,TCustomer,TProject,TDevice,Users
 
 def crm_database():
 
     export_class(Users.query.all(),"users")    
     export_class(TFacility.query.all(),"tfacility")
-    export_class(TVisiting.query.all(),"TVisiting")
+    export_class(TEvent.query.all(),"TEvent")
     export_class(TCustomer.query.all(),"tcustomer")
     
     string="done"
     return string
-def crm_read():
-    filename="D:\\_Projects\\CloudCRM\\tfacility.txt"
+def get_lines_read(filename):
     fp = open(filename, "r",encoding='UTF-8')
     lines=fp.readlines()
     fp.close()
+    return lines
+    
+##---CRM的導入
+def crm_read():
+    global folder
+    
+    #---載入Users-------
+    lines=get_lines_read(folder+"users.txt")
     for i in range(len(lines)):
         dic=json.loads(lines[i])
-        fac=TFacility(dic)
-        print(lines[i],type(dic),",類別:",type(fac))
+        dic.pop("customerList")
+        dic.pop("facilityList")
+        fac=Users(dic)
+        fac.password=fac.password.encode()
+        db.session.add(fac)
+        #print(lines[i],type(dic),",類別:",type(fac))
+    #---載入TFacility-------
+    lines=get_lines_read(folder+"tfacility.txt")
+    for i in range(len(lines)):
+        dic=json.loads(lines[i])
         
-    return lines
+        fac=TFacility(dic)
+        db.session.add(fac)
+
+    #---載入TCustomer-------    
+    lines=get_lines_read(folder+"tcustomer.txt")
+    for i in range(len(lines)):
+        dic=json.loads(lines[i])
+        dic.pop("facilityid")
+        fac=TCustomer(dic)
+        db.session.add(fac)
+        
+    #---載入TEvent-------
+    lines=get_lines_read(folder+"tevent.txt")
+    for i in range(len(lines)):
+        dic=json.loads(lines[i])
+        dic.pop("ownerid")
+        dic.pop("facilityid")
+        dic.pop("customerList")
+        
+        
+        try:
+            datetime.strptime(dic['endtime']   , '%Y-%m-%d %H:%M:%S')#'2022-05-13 07:24:00'
+            datetime.strptime(dic['starttime'] , '%Y-%m-%d %H:%M:%S')
+            datetime.strptime(dic['nexttime']  , '%Y-%m-%d %H:%M:%S')
+        except:
+            print("not meet")
+        
+        try:
+            dic['endtime']     =datetime.strptime(dic['endtime']   , '%Y-%m-%d %H:%M:%S')#'2022-05-13 07:24:00'
+            dic['starttime']   =datetime.strptime(dic['starttime'] , '%Y-%m-%d %H:%M:%S')
+            dic['nexttime']    =datetime.strptime(dic['nexttime']  , '%Y-%m-%d %H:%M:%S')
+        except:
+            print("not right item")
+        fac=TEvent(dic)
+        db.session.add(fac)
+
+    db.session.commit()
+    return "done"
 from apps import db
 
 def show_all(the_class):
@@ -107,18 +164,18 @@ def relation_test02():
         print("沒找到!")
 def create_test02():
     dic={"id":1,"description":"我見了面","nextstep":"繼續見面"}
-    visiting=TVisiting(dic)
+    visiting=TEvent(dic)
     db.session.add(visiting)
     
     dic={"id":2,"description":"搭訕","nextstep":"約出來見面"}
-    visiting=TVisiting(dic)
+    visiting=TEvent(dic)
     db.session.add(visiting)    
     
     
     db.session.commit()
 def relation_test03():
     
-    vis=TVisiting.query.filter(TVisiting.id==2).first()
+    vis=TEvent.query.filter(TEvent.id==2).first()
     cust=TCustomer.query.filter(TCustomer.id==1).first()
     if vis:
         cust.name="我改-多對多"
@@ -129,15 +186,65 @@ def relation_test03():
         print("更新完成")
     else:
         print("沒找到!")
+import re
+def connect_relation_event():
+    lines=get_lines_read(folder+"tevent.txt")
+    for i in range(len(lines)):
+        dic=json.loads(lines[i])
+        ownerid     =dic["ownerid"]
+        #customerList=int(dic["customerList"].sub(";"))
+        customerList = int(re.sub(";","",dic["customerList"]))
+        facilityid  =dic["facilityid"]
+        
+        dic.pop("ownerid")
+        dic.pop("facilityid")
+        dic.pop("customerList")
+        cust=TCustomer.query.filter_by(id=customerList).first()
+        
+        
+        id=dic["id"]
+        event=TEvent.query.filter_by(id=id).first()
+        event.userID=int(ownerid)
+        event.facilityID=int(facilityid)
+        event.customerList.append(cust)
+    db.session.flush()
+    db.session.commit()
+    """
+    TEvent.query.all()
+    for c in the_class:
+    """ 
+    return
+def connect_relation_customer():
+    lines=get_lines_read(folder+"tcustomer.txt")
+    for i in range(len(lines)):
+        dic=json.loads(lines[i])
+        facilityid=dic["facilityid"]
+        
+        dic.pop("facilityid")
+        id=dic["id"]
+        customer=TCustomer.query.filter_by(id=id).first()
+        customer.facilityID=facilityid
+    db.session.flush()
+    db.session.commit()
+    
+
 def rela_test():
+
+
+    ##01CRM原始類別讀入，並去除不需的變數
+    #crm_read()
+    ##02建立類別間的關聯，一樣從原始文字檔讀取。
+    #connect_relation_event()
+    #connect_relation_customer()
+    ##03依序檢查TEvent-Facility,userID,customerList
+
     
-    #create_test02()
-    #relation_test03()
+    print("-----------------------")
+    #show_all(TCustomer.query.all())
     
-    show_all(TCustomer.query.all())
-    show_all(TFacility.query.all())
-    show_all(TVisiting.query.all())
+    #show_all(TFacility.query.all())
+    #show_all(TEvent.query.all())
+    #show_all(Users.query.all())
     
-    
-    
-    return "done"
+
+    return "關聯我"

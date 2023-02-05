@@ -2,6 +2,7 @@
 
 
 import os
+
 from decouple import config
 
 class Config(object):
@@ -46,25 +47,26 @@ class DebugConfig(Config):
     basedir = os.path.abspath(os.path.dirname(__file__))
 
     
+    #SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'longgooddb.bytes')
+    username="longgoodapi"
+    password="ji3cl3gj94MM"
+    hostip='13.215.160.174'
+    db_name='Rehabilitation'
+    if  (os.environ.get('OS','')=="Windows_NT"):
+        username="root"
+        password="rraayy"
+        hostip="localhost"
+        db_name="rehabilitation"
+        print("Windows~")
+    
+    
     SQLALCHEMY_DATABASE_URI='{}://{}:{}@{}:{}/{}'.format(
         'mysql',
-        'longgoodapi',
-        'ji3cl3gj94MM',
-        '13.215.160.174',
+        username,
+        password,
+        hostip,
         3306,
-        'Rehabilitation')
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'longgooddb.bytes')
-    
-    """
-    SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}'.format(
-        config('DB_ENGINE', default='mysql'),
-        config('DB_USERNAME', default='longgoodapi'),
-        config('DB_PASS', default='ji3cl3gj94MM'),
-        config('DB_HOST', default='13.215.160.174'),
-        config('DB_PORT', default=3306),
-        config('DB_NAME', default='dbtest')
-    )
-    """
+        db_name)
     
     
     

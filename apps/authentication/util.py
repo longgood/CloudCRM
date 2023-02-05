@@ -31,4 +31,6 @@ def verify_pass(provided_password, stored_password):
                                   salt.encode('ascii'),
                                   100000)
     pwdhash = binascii.hexlify(pwdhash).decode('ascii')
+    
     return pwdhash == stored_password
+    
