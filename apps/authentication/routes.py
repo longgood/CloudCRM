@@ -64,7 +64,7 @@ def register_user():
         realname=request.form['realname']
         jobtitle=request.form['jobtitle']
         
-        print("---check--")
+        print("---check--",userid,email,password,realname,jobtitle)
         user = Users.query.filter_by(userid=userid).first()
         if user:
             print("regiester_manager,userid exist")
@@ -75,6 +75,7 @@ def register_user():
         # Check email exists
         #manager = Managers.query.filter_by(email=email).first()
         # else we can create the user
+        print("**Form:",request.form)
         user = Users(**request.form)
         db.session.add(user)
         db.session.commit()

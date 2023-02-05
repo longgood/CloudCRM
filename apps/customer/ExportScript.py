@@ -35,7 +35,8 @@ def get_lines_read(filename):
     lines=fp.readlines()
     fp.close()
     return lines
-    
+
+
 ##---CRM的導入
 def crm_read():
     global folder
@@ -46,7 +47,8 @@ def crm_read():
         dic=json.loads(lines[i])
         dic.pop("customerList")
         dic.pop("facilityList")
-        fac=Users(dic)
+        fac=Users()
+        fac.add_new(dic)
         fac.password=fac.password.encode()
         db.session.add(fac)
         #print(lines[i],type(dic),",類別:",type(fac))
@@ -93,6 +95,24 @@ def crm_read():
 
     db.session.commit()
     return "done"
+def crm_user_password():
+    global folder
+    
+    #---載入Users-------
+    lines=get_lines_read(folder+"users.txt")
+    for i in range(len(lines)):
+        dic=json.loads(lines[i])
+        dic.pop("customerList")
+        dic.pop("facilityList")
+        print("Type:",type(dic["password"]),",content:",dic["password"])
+        user=Users.query.filter(Users.id==dic["id"]).first()
+        user.password=dic["password"].decode()
+        #fac=Users()
+        #fac.add_new(dic)
+        #fac.password=fac.password.encode()
+        #db.session.add(fac)
+        #print(lines[i],type(dic),",類別:",type(fac))
+
 from apps import db
 
 def show_all(the_class):
@@ -237,7 +257,7 @@ def rela_test():
     #connect_relation_event()
     #connect_relation_customer()
     ##03依序檢查TEvent-Facility,userID,customerList
-
+    
     
     print("-----------------------")
     #show_all(TCustomer.query.all())
@@ -245,6 +265,7 @@ def rela_test():
     #show_all(TFacility.query.all())
     #show_all(TEvent.query.all())
     #show_all(Users.query.all())
-    
+    ##04更新使用者的密碼:
+    crm_user_password()
 
     return "關聯我"

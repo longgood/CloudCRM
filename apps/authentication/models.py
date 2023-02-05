@@ -39,6 +39,7 @@ class Users(db.Model, UserMixin):
     #staff=db.relationship("Users",remote_side=[id])#backref=backref("boss",remote_side=[id]))
     
     def __init__(self, **kwargs):
+        print("註冊用:",kwargs)
         for property, value in kwargs.items():
             # depending on whether value is an iterable or not, we must
             # unpack it's value (when **kwargs is request.form, some values
@@ -51,10 +52,16 @@ class Users(db.Model, UserMixin):
                 value = hash_pass(value)  # we need bytes here (not plain str)
 
             setattr(self, property, value)
-
-    def __init__(self, my_dict):
+    
+    
+    
+    
+    
+    def add_new(self,my_dict):
+        print("字典檔新增",my_dict)
         for key in my_dict:
             setattr(self, key, my_dict[key])
+    
     def __repr__(self):
         value="姓名:'%s',id='%s',userid='%s',  職稱:'%s'" % (
                    self.realname,self.id, self.userid, self.jobtitle) 

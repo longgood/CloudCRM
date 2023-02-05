@@ -47,17 +47,21 @@ class DebugConfig(Config):
     basedir = os.path.abspath(os.path.dirname(__file__))
 
     
-    #SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'longgooddb.bytes')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'longgooddb.bytes')
+    
+
     username="longgoodapi"
     password="ji3cl3gj94MM"
     hostip='13.215.160.174'
     db_name='Rehabilitation'
-    if  (os.environ.get('OS','')=="Windows_NT"):
-        username="root"
-        password="rraayy"
-        hostip="localhost"
-        db_name="rehabilitation"
-        print("Windows~")
+    isLocal=False
+    if isLocal:
+        if  (os.environ.get('OS','')=="Windows_NT"):
+            username="root"
+            password="rraayy"
+            hostip="localhost"
+            db_name="rehabilitation"
+            print("Windows~")
     
     
     SQLALCHEMY_DATABASE_URI='{}://{}:{}@{}:{}/{}'.format(
@@ -67,7 +71,6 @@ class DebugConfig(Config):
         hostip,
         3306,
         db_name)
-    
     
     
 # Load all possible configurations
