@@ -1,4 +1,4 @@
-from apps.authentication.models import TFacility,TEvent,TCustomer
+from apps.authentication.models import TFacility,TEvent,TManager
 #from apps import db
 from flask import render_template
 from datetime import datetime , timedelta
@@ -103,19 +103,19 @@ class TCustomerData():
 
             if not facility:
                 fac=TFacility({})
-                fac.id=self.get_id(TFacility.query.count())
+                fac.uid=self.get_id(TFacility.query.count())
                 fac.name=facilityname
                 fac.add_new()
-                facility_id=fac.id
+                facility_id=fac.uid
                 print("facility add")
             else:
-                facility_id=facility.id
+                facility_id=facility.uid
 
-            customer = TCustomer.query.filter_by(name=customername,title=title).first()
+            customer = TManager.query.filter_by(name=customername,title=title).first()
             if not customer:
-                customer=TCustomer({})
-                customer.id=self.get_id(TCustomer.query.count())
-                customer.ownerid=usermanager.id
+                customer=TManager({})
+                customer.uid=self.get_id(TManager.query.count())
+                customer.ownerid=usermanager.uid
                 customer.name=customername
                 customer.title=title
                 customer.facilityid=facility_id
@@ -129,7 +129,7 @@ class TCustomerData():
             act_count=TEvent.query.count()
             id=self.get_id(act_count)
          
-            actdic={"id":id,"ownerid":usermanager.id,"facilityid":facility_id,"customerList":str(customer.id)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
+            actdic={"id":id,"ownerid":usermanager.uid,"facilityid":facility_id,"customerList":str(customer.uid)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
                     "nexttime":timedelta(days=day_delta)+starttime,"type":type,"description":activity_form.description,"nextstep":activity_form.nextstep,"recommand":"","status":0,
                     "winrate":50,"priority":50,"customerType":0}
             
@@ -178,21 +178,21 @@ class TCustomerData():
         
             if not facility:
                 fac=TFacility()
-                fac.id=self.get_id(TFacility.query.count())
+                fac.uid=self.get_id(TFacility.query.count())
                 fac.name=facilityname
                 fac.add_new()
                 #db.session.add(fac)
-                facility_id=fac.id
+                facility_id=fac.uid
                 print("--002沒有facility")
 
             else:
-                facility_id=facility.id
-            customer = TCustomer.query.filter_by(name=customername,title=title).first()
+                facility_id=facility.uid
+            customer = TManager.query.filter_by(name=customername,title=title).first()
             print("姓名:",customername,",取得:",customer.name)
             if not customer:
-                customer=TCustomer()
-                customer.id=self.get_id(TCustomer.query.count())
-                customer.ownerid=usermanager.id
+                customer=TManager()
+                customer.uid=self.get_id(TManager.query.count())
+                customer.ownerid=usermanager.uid
                 customer.name=customername
                 customer.title=title
                 customer.facilityid=facility_id
@@ -211,7 +211,7 @@ class TCustomerData():
             act_count=TEvent.query.count()
             id=self.get_id(act_count)
          
-            actdic={"id":id,"ownerid":usermanager.id,"facilityid":facility_id,"customerList":str(customer.id)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
+            actdic={"id":id,"ownerid":usermanager.uid,"facilityid":facility_id,"customerList":str(customer.uid)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
                     "nexttime":timedelta(days=day_delta)+starttime,"type":type,"description":activity_form.description,"nextstep":activity_form.nextstep,"recommand":"","status":0,
                     "winrate":winrate,"priority":priority,"customerType":customerType}
             
@@ -224,7 +224,7 @@ class TCustomerData():
         now_dt_format = now_dt.strftime('%Y-%m-%dT%H:%M')
         facility_name=""
         customer_title=""
-        cust=TCustomer.query.filter_by(name=form.customer_name).first()
+        cust=TManager.query.filter_by(name=form.customer_name).first()
         
         if cust:
             customer_title=cust.title
@@ -252,7 +252,7 @@ class TCustomerData():
         return render_template('customer/add_new_activity_adding_mode.html', form=activity_form,msg=msg,activity=result_facility)
     #後續跟進
     def get_customer_followup(self,usermanager):
-        ownerid=usermanager.id
+        ownerid=usermanager.uid
         result=TEvent.query.filter(TEvent.ownerid==ownerid,TEvent.nexttime>timedelta(days=1) ).all()
         cust_followed=[]
         actlist=[]
@@ -264,18 +264,18 @@ class TCustomerData():
                 followed=TEvent.query.filter(TEvent.ownerid==ownerid,TEvent.customerList==r.customerList,TEvent.starttime>r.starttime  ).first()
                 if followed:
                     customerid=followed.customerList.split(";")[0]
-                    cust=TCustomer.query.filter_by(id=customerid).first()
+                    cust=TManager.query.filter_by(id=customerid).first()
                     actlist.append(followed)
                 else:
                     customerid=r.customerList.split(";")[0]
-                    cust=TCustomer.query.filter_by(id=customerid).first()
+                    cust=TManager.query.filter_by(id=customerid).first()
                     actlist.append(r)
 
         
         
         for act in actlist:
             customerid=act.customerList.split(";")[0]
-            cust=TCustomer.query.filter_by(id=customerid).first()
+            cust=TManager.query.filter_by(id=customerid).first()
             
             fac=TFacility.query.filter_by(id=act.facilityid).first()
         

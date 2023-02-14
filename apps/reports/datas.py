@@ -1,4 +1,4 @@
-from apps.authentication.models import TFacility,TEvent,TCustomer, TProject
+from apps.authentication.models import TFacility,TEvent,TManager, TProject
 from flask import render_template
 from flask_babel import *
 from collections import OrderedDict
@@ -19,7 +19,7 @@ class TData():
         return
     def get_activity(self,ownerid):
         
-        result=TEvent.query.filter(TEvent.userID==ownerid,TEvent.type>=0).order_by(TEvent.id.desc()).all()
+        result=TEvent.query.filter(TEvent.userID==ownerid,TEvent.type>=0).order_by(TEvent.uid.desc()).all()
         return result
     def get_all_project_number(self):
         return TProject.query.count()
@@ -31,7 +31,7 @@ class TData():
         return result
     def get_customer(self,ownerid):
         #result=TCustomer.query.filter_by(ownerid=ownerid).all()
-        result=TCustomer.query.all()
+        result=TManager.query.all()
         return result    
     def get_customer_name(self,customerid):
         #print("type",type(customerid),",value:",customerid)
@@ -39,7 +39,7 @@ class TData():
         print("---in get customer name---",customerid)
         #print("len:",len(TCustomer.query.all()))
         try:
-            name=TCustomer.query.filter(TCustomer.id==customerid).first().name
+            name=TManager.query.filter(TManager.uid==customerid).first().name
             print("****Name:",name)            
         except:
             name="乖乖"
@@ -129,7 +129,7 @@ class TData():
         return "完成!"
         """
     def get_report_general(self,usermanager,form):
-        ownerid=usermanager.id
+        ownerid=usermanager.uid
         #--1先修改---
         if form:
             print("0預備更新")
@@ -151,7 +151,7 @@ class TData():
         count=0
         for a in acts:
             if len(a.customerList)>0:
-                customerid=a.customerList[0].id#a.customerList.split(";")[0]
+                customerid=a.customerList[0].uid#a.customerList.split(";")[0]
             else:
                 customerid=0
             facilityid=a.facilityID
@@ -185,13 +185,13 @@ class TData():
             #--設定順序，並修改原有的acts-----------
         facdic={}
         for main in acts:
-            fac_customer=str(main.facilityID)+str(main.customerList[0].id)
+            fac_customer=str(main.facilityID)+str(main.customerList[0].uid)
             #print("編碼:",fac_customer)
             if fac_customer not in facdic:
                 target_facility=fac_customer
                 latest_date=datetime(1979,1,13)
                 for a in acts:
-                    a_fac_customer=str(a.facilityID)+str(a.customerList[0].id)
+                    a_fac_customer=str(a.facilityID)+str(a.customerList[0].uid)
                     #print("新組合成:",a_fac_customer)
                     if a_fac_customer == target_facility:
                         print((a.nexttime>latest_date),"**",a.nexttime,"-->",latest_date)
@@ -210,7 +210,7 @@ class TData():
         #-修改acts所有活動的順序了
         for key, value in facdic.items():
             for a in acts:
-                a_fac_customer=str(a.facilityID)+str(a.customerList[0].id)
+                a_fac_customer=str(a.facilityID)+str(a.customerList[0].uid)
                 if a_fac_customer == key:
                     new_act.append(a)
                     
@@ -220,7 +220,7 @@ class TData():
         count=0
         for a in acts:
             if len(a.customerList)>0:
-                customerid=a.customerList[0].id#a.customerList.split(";")[0]
+                customerid=a.customerList[0].uid#a.customerList.split(";")[0]
             else:
                 customerid=0
             facilityid=a.facilityID
@@ -257,7 +257,7 @@ class TData():
         facility=[]
         result_facility=[]
         for main in acts:
-            main_facust=main.facilityID+main.customerList[0].id
+            main_facust=main.facilityID+main.customerList[0].uid
             #取代facilityid
             
             if main_facust not in facility:
@@ -277,7 +277,7 @@ class TData():
                 for a in acts:
                     #相同的機構
                     if len(a.customerList)>0:
-                        customerid=a.customerList[0].id#a.customerList.split(";")[0]
+                        customerid=a.customerList[0].uid#a.customerList.split(";")[0]
                     else:
                         customerid=0
                     
@@ -288,8 +288,8 @@ class TData():
                         customer.append(a.customer)
                         fac["customer"]=fac["customer"]+"<strong>"+str(a.starttime).split(" ")[0]+":"+a.strtype+a.customer+"</strong><br>"+a.description+"<br><u>下一步</u><br>"+a.nextstep+"<br>"
                         fac["facilityid"]=main.facilityID
-                        fac["customerid"]=main.customerList[0].id
-                        fac["activityid"]=main.id
+                        fac["customerid"]=main.customerList[0].uid
+                        fac["activityid"]=main.uid
                         fac["type"]=main.type
                         fac["priority"]=self.get_priority_str(a.priority)
                         fac["winrate"]=self.get_priority_str(a.winrate)
@@ -312,8 +312,8 @@ class TData():
     def cal_report_facility_user(self,usermanager):
     
         print("cal_report_facility_user:",usermanager)
-        print("ID:",usermanager.id)
-        ownerid=usermanager.id
+        print("ID:",usermanager.uid)
+        ownerid=usermanager.uid
         acts=self.get_activity(ownerid)
         
         start_day,end_day=self.get_duration_edge()
@@ -349,7 +349,7 @@ class TData():
         print("--彙整後的機構數::",len(result_facility))
         return result_facility    
     def cal_report_weekly(self,usermanager):
-        ownerid=usermanager.id
+        ownerid=usermanager.uid
         acts=self.get_activity(ownerid)
         count=0
         
@@ -401,7 +401,7 @@ class TData():
         
         #----------修訂相關-------------------
         for a in acts:
-            customerid=a.customerList[0].id
+            customerid=a.customerList[0].uid
             facilityid=a.facilityID
             type      =a.type
             customer_name=self.get_customer_name(customerid)
@@ -442,7 +442,7 @@ class TData():
                         fac["customer"]=fac["customer"]+"<strong>"+str(a.starttime).split(" ")[0]+":"+a.strtype+a.customer+"</strong><br>"+a.description+"<br><u>下一步</u><br>"+a.nextstep+"<br>"
                         fac["facilityid"]=main.facilityID
                         fac["customerid"]=main.customerList
-                        fac["activityid"]=main.id
+                        fac["activityid"]=main.uid
                         fac["type"]=main.type
 
                         if a.nexttime>passdate:

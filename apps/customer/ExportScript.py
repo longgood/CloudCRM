@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from apps.authentication.util import hash_pass
 folder="D:\\Dropbox\\tmpp202301\\goodbackup\\"
 class DatetimeEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -19,14 +20,14 @@ def export_class(item,filename="typename"):
         file.writelines(str+"\n")
     file.close()
 
-from apps.authentication.models import TFacility,TEvent,TCustomer,TProject,TDevice,Users
+from apps.authentication.models import TFacility,TEvent,TProject,TDevice,TManager
 
 def crm_database():
 
-    export_class(Users.query.all(),"users")    
+    #export_class(Users.query.all(),"users")    
     export_class(TFacility.query.all(),"tfacility")
     export_class(TEvent.query.all(),"TEvent")
-    export_class(TCustomer.query.all(),"tcustomer")
+    #export_class(TCustomer.query.all(),"tcustomer")
     
     string="done"
     return string
@@ -47,7 +48,7 @@ def crm_read():
         dic=json.loads(lines[i])
         dic.pop("customerList")
         dic.pop("facilityList")
-        fac=Users()
+        fac=TManager()
         fac.add_new(dic)
         fac.password=fac.password.encode()
         db.session.add(fac)
@@ -65,7 +66,7 @@ def crm_read():
     for i in range(len(lines)):
         dic=json.loads(lines[i])
         dic.pop("facilityid")
-        fac=TCustomer(dic)
+        fac=TManager(dic)
         db.session.add(fac)
         
     #---載入TEvent-------
@@ -104,9 +105,24 @@ def crm_user_password():
         dic=json.loads(lines[i])
         dic.pop("customerList")
         dic.pop("facilityList")
-        print("Type:",type(dic["password"]),",content:",dic["password"])
-        user=Users.query.filter(Users.id==dic["id"]).first()
-        user.password=dic["password"].decode()
+        user=TManager.query.filter(TManager.uid==dic["id"]).first()
+        
+        
+        if user.uid==0:
+            print("0 ray:",user.realname,"end name")
+            user.password=hash_pass("rraayy")
+        elif user.uid==1:
+            print("1:",user.userid,"end name")
+            user.password=hash_pass("rraayy")
+        elif user.uid==2:
+            print("2",user.userid,"end name")
+            user.password=hash_pass("rraayy")
+        elif user.uid==3:
+            print("3",user.userid,"end name")
+            user.password=hash_pass("54158175")
+        
+        db.session.flush()
+    db.session.commit()
         #fac=Users()
         #fac.add_new(dic)
         #fac.password=fac.password.encode()
@@ -124,16 +140,16 @@ def create_test01():
 
     
     dic={"id":1,"name":"陳英豪","phone":"0922129123","email":"ray@longgood","title":"大帥帥"}
-    customer=TCustomer(dic)
+    customer=TManager(dic)
     db.session.add(customer)
 
     dic={"id":2,"name":"陳淫豪","phone":"0922129123","email":"ray@longgood","title":"大帥帥"}
-    customer=TCustomer(dic)
+    customer=TManager(dic)
     db.session.add(customer)
 
     
     dic={"id":3,"name":"陳盈豪","phone":"0922129123","email":"ray@longgood","title":"大帥帥"}
-    customer=TCustomer(dic)
+    customer=TManager(dic)
     db.session.add(customer)
 
     
@@ -159,7 +175,7 @@ def create_test01():
     return
 def relation_test01():
     
-    customer=TCustomer.query.filter(TCustomer.id==2).first()
+    customer=TManager.query.filter(TManager.uid==2).first()
     if customer:
         customer.name="我是老二大"
         customer.fid=3
@@ -171,8 +187,8 @@ def relation_test01():
     
 def relation_test02():
     
-    fac=TFacility.query.filter(TFacility.id==2).first()
-    customer=TCustomer.query.filter(TCustomer.id==3).first()
+    fac=TFacility.query.filter(TFacility.uid==2).first()
+    customer=TManager.query.filter(TManager.uid==3).first()
     if fac:
         customer.name="我改改3"
         fac.name="藏雲閣2"
@@ -195,8 +211,8 @@ def create_test02():
     db.session.commit()
 def relation_test03():
     
-    vis=TEvent.query.filter(TEvent.id==2).first()
-    cust=TCustomer.query.filter(TCustomer.id==1).first()
+    vis=TEvent.query.filter(TEvent.uid==2).first()
+    cust=TManager.query.filter(TManager.uid==1).first()
     if vis:
         cust.name="我改-多對多"
         vis.description="我見了某人"
@@ -219,7 +235,7 @@ def connect_relation_event():
         dic.pop("ownerid")
         dic.pop("facilityid")
         dic.pop("customerList")
-        cust=TCustomer.query.filter_by(id=customerList).first()
+        cust=TManager.query.filter_by(id=customerList).first()
         
         
         id=dic["id"]
@@ -242,15 +258,43 @@ def connect_relation_customer():
         
         dic.pop("facilityid")
         id=dic["id"]
-        customer=TCustomer.query.filter_by(id=id).first()
+        customer=TManager.query.filter_by(id=id).first()
         customer.facilityID=facilityid
     db.session.flush()
     db.session.commit()
     
-
+import random
 def rela_test():
-
-
+    ##00測試self reference的使用方式。
+    #map_column, and db.relation
+    nameList=["陳輝宏","劉啟焉","劉長備","劉恢富","劉快陶","李伯安","劉絞辯","王子安"]
+    nameLen=len(nameList)
+    index=random.randrange(0,nameLen)
+    
+    """
+    #設定
+    for i in range(0,nameLen):
+        manager=TManager()
+        manager.gender=0
+        manager.realName=nameList[i]
+        db.session.add(manager)
+    db.session.commit()
+    managers=TManager.query.all()
+    count=0
+    for p in managers:
+        #count=count+1
+        p.bossID=2
+        db.session.flush()
+    db.session.commit()
+    """
+    managers=TManager.query.all()
+    for p in managers:
+        print(p.uid,p.realName,"這人:",p.bossID,"=>",p.submanagerLIST)
+        print("----")
+        
+    """
+    
+    #db.session.commit()
     ##01CRM原始類別讀入，並去除不需的變數
     #crm_read()
     ##02建立類別間的關聯，一樣從原始文字檔讀取。
@@ -260,12 +304,12 @@ def rela_test():
     
     
     print("-----------------------")
-    #show_all(TCustomer.query.all())
+    #show_all(TManager.query.all())
     
     #show_all(TFacility.query.all())
     #show_all(TEvent.query.all())
-    #show_all(Users.query.all())
+    #show_all(TManager.query.all())
     ##04更新使用者的密碼:
-    crm_user_password()
-
+    #crm_user_password()
+    """
     return "關聯我"

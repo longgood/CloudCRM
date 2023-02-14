@@ -9,10 +9,19 @@ from flask_login import (
 from apps import db, login_manager
 from apps.authentication import blueprint
 from apps.authentication.forms import LoginForm, CreateAccountForm
-from apps.authentication.models import Users
+from apps.authentication.models import TManager
 from apps.authentication.util import verify_pass
 from apps.authentication.fakedata import fake
-@blueprint.route('/fake_data')
+from apps.authentication.util import hash_pass
+@blueprint.route('/renew_pswd')
+def renew_pswd():
+    user=TManager.query.first()
+    print(user.password)
+    user.password=hash_pass("rraayy")
+    db.session.flush()
+    db.session.commit()
+    print(user.password)
+    return "done"
 def fake_data():
     result=fake()
     return result.get_test()
@@ -33,7 +42,7 @@ def login():
         password = request.form['password']
 
         # Locate user
-        user = Users.query.filter_by(userid=userid).first()
+        user = TManager.query.filter_by(userid=userid).first()
         
         # Check the password
         if user and verify_pass(password, user.password):
@@ -45,7 +54,7 @@ def login():
         return render_template('accounts/login.html',
                                msg='帳號或是密碼錯誤',
                                form=login_form)
-
+    print("CurrentUser:",current_user)
     if not current_user.is_authenticated:
         return render_template('accounts/login.html',
                                form=login_form)
@@ -64,8 +73,14 @@ def register_user():
         realname=request.form['realname']
         jobtitle=request.form['jobtitle']
         
+        data={}
+        data["eMail"]=email
+        data["password"]=password
+        data["accountId"]=userid
+        data["realName"]=realname
+        data["jobTitle"]=jobtitle
         print("---check--",userid,email,password,realname,jobtitle)
-        user = Users.query.filter_by(userid=userid).first()
+        user = TManager.query.filter_by(accountId=userid).first()
         if user:
             print("regiester_manager,userid exist")
             return render_template('accounts/register_user.html',
@@ -76,7 +91,10 @@ def register_user():
         #manager = Managers.query.filter_by(email=email).first()
         # else we can create the user
         print("**Form:",request.form)
-        user = Users(**request.form)
+        print("Dic",data)
+        
+        user = TManager(data)
+        print("user:",user)
         db.session.add(user)
         db.session.commit()
         print("manager, registed:",create_account_form)
@@ -93,7 +111,7 @@ def register():
         email = request.form['email']
 
         # Check usename exists
-        user = Users.query.filter_by(username=username).first()
+        user = TManager.query.filter_by(username=username).first()
         if user:
             return render_template('accounts/register.html',
                                    msg='該帳號名稱已經註冊',
@@ -101,7 +119,7 @@ def register():
                                    form=create_account_form)
 
         # Check email exists
-        user = Users.query.filter_by(email=email).first()
+        user = TManager.query.filter_by(email=email).first()
         if user:
             return render_template('accounts/register.html',
                                    msg='該郵件已經註冊',
@@ -109,7 +127,7 @@ def register():
                                    form=create_account_form)
 
         # else we can create the user
-        user = Users(**request.form)
+        user = TManager(**request.form)
         db.session.add(user)
         db.session.commit()
 
@@ -129,7 +147,7 @@ def register_patient():
         email = request.form['email']
 
         # Check usename exists
-        user = Users.query.filter_by(username=username).first()
+        user = TManager.query.filter_by(username=username).first()
         if user:
             return render_template('accounts/register_patient.html',
                                    msg='該帳號名稱已經註冊',
@@ -137,7 +155,7 @@ def register_patient():
                                    form=create_account_form)
 
         # Check email exists
-        user = Users.query.filter_by(email=email).first()
+        user = TManager.query.filter_by(email=email).first()
         if user:
             return render_template('accounts/register_patient.html',
                                    msg='該郵件已經註冊',
@@ -145,7 +163,7 @@ def register_patient():
                                    form=create_account_form)
 
         # else we can create the user
-        user = Users(**request.form)
+        user = TManager(**request.form)
         db.session.add(user)
         db.session.commit()
 

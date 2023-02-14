@@ -1,7 +1,10 @@
 from collections import OrderedDict
 from apps import db
 from apps.authentication.util import hash_pass
+
 Base=db.Model
+
+    
 """
 class TManager(Base):
     __tablename__ = 'TManager'

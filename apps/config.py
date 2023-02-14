@@ -54,7 +54,7 @@ class DebugConfig(Config):
     password="ji3cl3gj94MM"
     hostip='13.215.160.174'
     db_name='Rehabilitation'
-    isLocal=False
+    isLocal=True
     if isLocal:
         if  (os.environ.get('OS','')=="Windows_NT"):
             username="root"
