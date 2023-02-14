@@ -42,7 +42,7 @@ def login():
         password = request.form['password']
 
         # Locate user
-        user = TManager.query.filter_by(userid=userid).first()
+        user = TManager.query.filter_by(accountId=userid).first()
         
         # Check the password
         if user and verify_pass(password, user.password):

@@ -1,4 +1,4 @@
-from apps.authentication.models import TFacility,TEvent,TManager
+from apps.authentication.models import TFacility,TEvent,TCustomer
 #from apps import db
 from flask import render_template
 from datetime import datetime , timedelta
@@ -9,11 +9,12 @@ reportdata=TData()
 class TCustomerData():
     usermanager="操作(使用)者名稱"
     current_patientid="病人姓名"
-    
+    """
     def get_id(self,num):
         pre=random.randint(10,99)
         id=pre+num*100+1000000000
         return id
+    """
     def get_type(self,input):
         result=0
         if input=="寫信":
@@ -92,7 +93,7 @@ class TCustomerData():
             facilityname=activity_form.facility_name
             customername=activity_form.customer_name
             title=activity_form.customer_title
-            facility = TFacility.query.filter_by(name=facilityname).first()
+            facility = TFacility.query.filter_by(displayName=facilityname).first()
             starttime=datetime.strptime(activity_form.starttime, "%Y-%m-%dT%H:%M")
             
             
@@ -103,21 +104,21 @@ class TCustomerData():
 
             if not facility:
                 fac=TFacility({})
-                fac.uid=self.get_id(TFacility.query.count())
-                fac.name=facilityname
+                #fac.uid=self.get_id(TFacility.query.count())
+                fac.realName=facilityname
                 fac.add_new()
                 facility_id=fac.uid
                 print("facility add")
             else:
                 facility_id=facility.uid
 
-            customer = TManager.query.filter_by(name=customername,title=title).first()
+            customer = TCustomer.query.filter_by(realName=customername,jobTitle=title).first()
             if not customer:
-                customer=TManager({})
-                customer.uid=self.get_id(TManager.query.count())
+                customer=TCustomer({})
+                #customer.uid=self.get_id(TManager.query.count())
                 customer.ownerid=usermanager.uid
                 customer.name=customername
-                customer.title=title
+                customer.jobTitle=title
                 customer.facilityid=facility_id
                 customer.add_new()
                 print("customer add")
@@ -125,15 +126,12 @@ class TCustomerData():
                 
             else:
                 print(customername+title+"的資料已經存在資料庫內!")
-            act=TEvent({})
-            act_count=TEvent.query.count()
-            id=self.get_id(act_count)
-         
-            actdic={"id":id,"ownerid":usermanager.uid,"facilityid":facility_id,"customerList":str(customer.uid)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
+            event=TEvent()
+            eventdic={"ownerid":usermanager.uid,"facilityid":facility_id,"customerList":str(customer.uid)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
                     "nexttime":timedelta(days=day_delta)+starttime,"type":type,"description":activity_form.description,"nextstep":activity_form.nextstep,"recommand":"","status":0,
                     "winrate":50,"priority":50,"customerType":0}
             
-            act.add_new(actdic)
+            event.add_new(eventdic)
             """
             act.id=id
             act.ownerid=usermanager.id
@@ -165,7 +163,7 @@ class TCustomerData():
             facilityname=activity_form.facility_name
             customername=activity_form.customer_name
             title=activity_form.customer_title
-            facility = TFacility.query.filter_by(name=facilityname).first()
+            facility = TFacility.query.filter_by(displayName=facilityname).first()
             starttime=datetime.strptime(activity_form.starttime, "%Y-%m-%dT%H:%M")
             day_delta=self.get_day_delta(activity_form.timedelta)
             minutes_delta=self.get_minutes_delta(activity_form.minutesdelta)
@@ -178,20 +176,19 @@ class TCustomerData():
         
             if not facility:
                 fac=TFacility()
-                fac.uid=self.get_id(TFacility.query.count())
-                fac.name=facilityname
+                #fac.uid=self.get_id(TFacility.query.count())
+                fac.displayName=facilityname
                 fac.add_new()
-                #db.session.add(fac)
                 facility_id=fac.uid
-                print("--002沒有facility")
+                print("--002沒有facility但已經新增",fac)
 
             else:
                 facility_id=facility.uid
-            customer = TManager.query.filter_by(name=customername,title=title).first()
-            print("姓名:",customername,",取得:",customer.name)
+            customer = TCustomer.query.filter_by(realName=customername,jobTitle=title).first()
+            print("姓名:",customername,",取得:",customer.realName)
             if not customer:
-                customer=TManager()
-                customer.uid=self.get_id(TManager.query.count())
+                customer=TCustomer()
+                #customer.uid=self.get_id(TManager.query.count())
                 customer.ownerid=usermanager.uid
                 customer.name=customername
                 customer.title=title
@@ -209,9 +206,9 @@ class TCustomerData():
             
             act=TEvent()
             act_count=TEvent.query.count()
-            id=self.get_id(act_count)
+            #id=self.get_id(act_count)
          
-            actdic={"id":id,"ownerid":usermanager.uid,"facilityid":facility_id,"customerList":str(customer.uid)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
+            actdic={"ownerid":usermanager.uid,"facilityid":facility_id,"customerList":str(customer.uid)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
                     "nexttime":timedelta(days=day_delta)+starttime,"type":type,"description":activity_form.description,"nextstep":activity_form.nextstep,"recommand":"","status":0,
                     "winrate":winrate,"priority":priority,"customerType":customerType}
             
@@ -224,14 +221,14 @@ class TCustomerData():
         now_dt_format = now_dt.strftime('%Y-%m-%dT%H:%M')
         facility_name=""
         customer_title=""
-        cust=TManager.query.filter_by(name=form.customer_name).first()
+        cust=TCustomer.query.filter_by(realName=form.customer_name).first()
         
         if cust:
-            customer_title=cust.title
-            fac=TFacility.query.filter_by(id=cust.facilityID).first()
+            customer_title=cust.jobTitle
+            fac=TFacility.query.filter_by(uid=cust.facilityID).first()
             if fac:
                 print("輸出",fac)
-                facility_name=fac.name
+                facility_name=fac.displayName
             else:
                 print("Fail Facility")
         else:
@@ -253,31 +250,31 @@ class TCustomerData():
     #後續跟進
     def get_customer_followup(self,usermanager):
         ownerid=usermanager.uid
-        result=TEvent.query.filter(TEvent.ownerid==ownerid,TEvent.nexttime>timedelta(days=1) ).all()
+        result=TEvent.query.filter(TEvent.managerID==ownerid,TEvent.nextTime>timedelta(days=1) ).all()
         cust_followed=[]
-        actlist=[]
+        eventlist=[]
         for r in result:
             #之後有跟進就以此為主。
-            customerid=r.customerList.split(";")[0]
+            customerid=r.customerID
             if customerid not in cust_followed:
                 cust_followed.append(customerid)
-                followed=TEvent.query.filter(TEvent.ownerid==ownerid,TEvent.customerList==r.customerList,TEvent.starttime>r.starttime  ).first()
+                followed=TEvent.query.filter(TEvent.managerID==ownerid,TEvent.customerLIST==r.customerLIST,TEvent.startTime>r.startTime  ).first()
                 if followed:
-                    customerid=followed.customerList.split(";")[0]
-                    cust=TManager.query.filter_by(id=customerid).first()
-                    actlist.append(followed)
+                    customerid=followed.customerID
+                    cust=TCustomer.query.filter_by(uid=customerid).first()
+                    eventlist.append(followed)
                 else:
-                    customerid=r.customerList.split(";")[0]
-                    cust=TManager.query.filter_by(id=customerid).first()
-                    actlist.append(r)
+                    customerid=r.customerID
+                    cust=TCustomer.query.filter_by(uid=customerID).first()
+                    eventlist.append(r)
 
         
         
-        for act in actlist:
-            customerid=act.customerList.split(";")[0]
-            cust=TManager.query.filter_by(id=customerid).first()
+        for event in eventlist:
+            customerid=event.customerID
+            cust=TCustomer.query.filter_by(uid=customerid).first()
             
-            fac=TFacility.query.filter_by(id=act.facilityid).first()
+            fac=TFacility.query.filter_by(uid=event.facilityID).first()
         
         
         return ""
