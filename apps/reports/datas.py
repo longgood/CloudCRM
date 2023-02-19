@@ -1,4 +1,4 @@
-from apps.authentication.models import TFacility,TEvent,TManager, TProject
+from apps.authentication.models import TFacility,TEvent,TManager, TProject, TCustomer
 from flask import render_template
 from flask_babel import *
 from collections import OrderedDict
@@ -127,31 +127,49 @@ class TData():
         return "完成!"
         """
     def get_report_general(self,usermanager,form):
+        print("----TYPE:",usermanager,usermanager.__tablename__)
         ownerid=usermanager.uid
         #--1先修改---
         if form:
             print("0預備更新")
         
-            act=TEvent.query.filter_by(uid=form.activityid).first()
-            if act:
+            event=TEvent.query.filter_by(uid=form.activityid).first()
+            if event:
                 print("1.準備更新")
 
-                act.description=form.description
-                act.nextstep=form.nextstep  
-                act.commit_update()
+                event.description=form.description
+                event.nextStep=form.nextstep  
+                event.update()
                 print("已經更新")
+                
+                allevent=TEvent.query.all()
+                for e in allevent:
+                    print("事件:",e)
+               
+            else:
+                print("找不到可惡!")
+        ##--0.tmp----
+        events=TEvent.query.all()
+        for e in events:
+            print("活動:",e.uid," from ",e.managerID,",customer:",e.customerID)
         
         #--2抓值----
+        print("Event:",usermanager.eventLIST)
         events=usermanager.eventLIST#   self.get_event(ownerid)
+        print("Event:",events)
         fac=self.get_facility()
         cust=usermanager.userLIST#   self.get_customer(ownerid)
         
         count=0
         for a in events:
-            if len(a.customerList)>0:
-                customerid=a.customerList[0].uid#a.customerList.split(";")[0]
+            customerid=a.customerID#a.customerList.split(";")[0]
+            
+            """
+            if len(a.customerLIST)>0:
+                customerid=a.customerID#a.customerList.split(";")[0]
             else:
                 customerid=0
+            """
             facilityid=a.facilityID
             type      =a.type
             customer_name=self.get_customer_name(customerid)
@@ -183,18 +201,18 @@ class TData():
             #--設定順序，並修改原有的events-----------
         facdic={}
         for main in events:
-            fac_customer=str(main.facilityID)+str(main.customerList[0].uid)
+            fac_customer=str(main.facilityID).zfill(10)+str(main.customerID).zfill(10)
             #print("編碼:",fac_customer)
             if fac_customer not in facdic:
                 target_facility=fac_customer
                 latest_date=datetime(1979,1,13)
                 for a in events:
-                    a_fac_customer=str(a.facilityID)+str(a.customerList[0].uid)
+                    a_fac_customer=str(a.facilityID).zfill(10)+str(a.customerID).zfill(10)
                     #print("新組合成:",a_fac_customer)
                     if a_fac_customer == target_facility:
-                        print((a.nexttime>latest_date),"**",a.nexttime,"-->",latest_date)
-                        if a.nexttime>latest_date:
-                            latest_date=a.nexttime
+                        print((a.nextTime>latest_date),"**",a.nextTime,"-->",latest_date)
+                        if a.nextTime>latest_date:
+                            latest_date=a.nextTime
                 facdic[fac_customer]=latest_date
                 
         #print("Facdic:",facdic)
@@ -208,7 +226,7 @@ class TData():
         #-修改events所有活動的順序了
         for key, value in facdic.items():
             for a in events:
-                a_fac_customer=str(a.facilityID)+str(a.customerList[0].uid)
+                a_fac_customer=str(a.facilityID).zfill(10)+str(a.customerID).zfill(10)
                 if a_fac_customer == key:
                     new_act.append(a)
                     
@@ -217,22 +235,20 @@ class TData():
     def cal_modify_act(self,events):
         count=0
         for a in events:
-            if len(a.customerList)>0:
-                customerid=a.customerList[0].uid#a.customerList.split(";")[0]
-            else:
-                customerid=0
+            customerid=a.customerID#a.customerList.split(";")[0]
+        
             facilityid=a.facilityID
             type      =a.type
             customer_name=self.get_customer_name(customerid)
             
             
             facility_name=self.get_facility_name(facilityid)
-            events[count].customerid=customerid
+            events[count].customerID=customerid
             events[count].customer=customer_name
             events[count].facility=facility_name
             events[count].strtype=self.get_type_str(a.type)
             events[count].description=events[count].description.replace("\n","<br>")
-            events[count].nextstep=events[count].nextstep.replace("\n","<br>")
+            events[count].nextStep=events[count].nextStep.replace("\n","<br>")
             count=count+1
         return events
     #003調整機構資訊內容    
@@ -255,7 +271,7 @@ class TData():
         facility=[]
         result_facility=[]
         for main in events:
-            main_facust=main.facilityID+main.customerList[0].uid
+            main_facust=str(main.facilityID).zfill(10)+str(main.customerID).zfill(10)
             #取代facilityid
             
             if main_facust not in facility:
@@ -274,26 +290,22 @@ class TData():
                 now=datetime.now()
                 for a in events:
                     #相同的機構
-                    if len(a.customerList)>0:
-                        customerid=a.customerList[0].uid#a.customerList.split(";")[0]
-                    else:
-                        customerid=0
+                    customerid=a.customerID
                     
-                    
-                    a_facust=a.facilityID+customerid
+                    a_facust=str(a.facilityID).zfill(10)+str(customerid).zfill(10)
                     if main_facust == a_facust:
                         
                         customer.append(a.customer)
-                        fac["customer"]=fac["customer"]+"<strong>"+str(a.starttime).split(" ")[0]+":"+a.strtype+a.customer+"</strong><br>"+a.description+"<br><u>下一步</u><br>"+a.nextstep+"<br>"
+                        fac["customer"]=fac["customer"]+"<strong>"+str(a.startTime).split(" ")[0]+":"+a.strtype+a.customer+"</strong><br>"+a.description+"<br><u>下一步</u><br>"+a.nextStep+"<br>"
                         fac["facilityid"]=main.facilityID
-                        fac["customerid"]=main.customerList[0].uid
+                        fac["customerid"]=main.customerID
                         fac["activityid"]=main.uid
                         fac["type"]=main.type
                         fac["priority"]=self.get_priority_str(a.priority)
                         fac["winrate"]=self.get_priority_str(a.winrate)
-                        fac["customerType"]=main.customerType
-                        if a.nexttime>passdate:
-                            passdate=a.nexttime
+                        fac["customerType"]=0
+                        if a.nextTime>passdate:
+                            passdate=a.nextTime
 
                         
                         
@@ -348,11 +360,10 @@ class TData():
         return result_facility    
     def cal_report_weekly(self,usermanager):
         events=usermanager.eventLIST
-        #acts=self.get_event(ownerid)
         count=0
-        
         start_day,end_day=self.get_duration_edge()
-        
+        print("Start:",start_day)
+        print("End:",end_day)
 
         #--需要設定時間-----------
         
@@ -378,8 +389,8 @@ class TData():
                 latest_date=datetime(1979,1,13)
                 for a in events:
                     if a.facilityID == target_facility:
-                        if a.nexttime>latest_date:
-                            latest_date=a.nexttime
+                        if a.nextTime>latest_date:
+                            latest_date=a.nextTime
                 facdic[main.facilityID]=latest_date
                 
         faclist=sorted(facdic.items(), key=lambda x:x[1])
@@ -399,19 +410,19 @@ class TData():
         
         #----------修訂相關-------------------
         for a in events:
-            customerid=a.customerList[0].uid
+            customerid=a.customerID
             facilityid=a.facilityID
             type      =a.type
             customer_name=self.get_customer_name(customerid)
             
             
             facility_name=self.get_facility_name(facilityid)
-            events[count].customerid=customerid
+            events[count].customerID=customerid
             events[count].customer=customer_name
             events[count].facility=facility_name
             events[count].strtype=self.get_type_str(a.type)
             events[count].description=events[count].description.replace("\n","<br>")
-            events[count].nextstep=events[count].nextstep.replace("\n","<br>")
+            events[count].nextStep=events[count].nextStep.replace("\n","<br>")
             count=count+1
         
         #-----------------------------彙整
@@ -437,14 +448,14 @@ class TData():
                     if main.facilityID == a.facilityID:
                         
                         customer.append(a.customer)
-                        fac["customer"]=fac["customer"]+"<strong>"+str(a.starttime).split(" ")[0]+":"+a.strtype+a.customer+"</strong><br>"+a.description+"<br><u>下一步</u><br>"+a.nextstep+"<br>"
+                        fac["customer"]=fac["customer"]+"<strong>"+str(a.startTime).split(" ")[0]+":"+a.strtype+a.customer+"</strong><br>"+a.description+"<br><u>下一步</u><br>"+a.nextStep+"<br>"
                         fac["facilityid"]=main.facilityID
-                        fac["customerid"]=main.customerList
+                        fac["customerid"]=main.customerID
                         fac["activityid"]=main.uid
                         fac["type"]=main.type
 
-                        if a.nexttime>passdate:
-                            passdate=a.nexttime
+                        if a.nextTime>passdate:
+                            passdate=a.nextTime
                             print("passdate 2:",passdate)
                         
                         

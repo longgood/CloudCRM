@@ -9,7 +9,7 @@ from wtforms.validators import Email, DataRequired
 
 # 記錄各式規格
 
-class ModifyActivityForm():
+class ModifyEventForm():
 
     #我們這邊誰發起或是負責這項活動。
     #這次有哪些客戶參與
@@ -18,7 +18,7 @@ class ModifyActivityForm():
         self.description=""    
         self.nextstep=""    
         
-        
+
         if 'activityid' in value:
             self.activityid=value['activityid']
         if 'description' in value:

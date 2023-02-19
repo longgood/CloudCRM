@@ -1,4 +1,4 @@
-from apps.authentication.models import TFacility,TEvent,TCustomer
+from apps.authentication.models import TFacility,TEvent,TCustomer, TManager
 #from apps import db
 from flask import render_template
 from datetime import datetime , timedelta
@@ -87,19 +87,19 @@ class TCustomerData():
             result=2
         return result
 
-    def get_customer_activity(self,activity_form,usermanager,isregister):
+    def get_customer_event(self,event_form,usermanager,isregister):
         msg=None
         if isregister:
-            facilityname=activity_form.facility_name
-            customername=activity_form.customer_name
-            title=activity_form.customer_title
+            facilityname=event_form.facility_name
+            customername=event_form.customer_name
+            title=event_form.customer_title
             facility = TFacility.query.filter_by(displayName=facilityname).first()
-            starttime=datetime.strptime(activity_form.starttime, "%Y-%m-%dT%H:%M")
+            starttime=datetime.strptime(event_form.starttime, "%Y-%m-%dT%H:%M")
             
             
-            day_delta=self.get_day_delta(activity_form.timedelta)
-            minutes_delta=self.get_minutes_delta(activity_form.minutesdelta)
-            type=self.get_type(activity_form.type)
+            day_delta=self.get_day_delta(event_form.timedelta)
+            minutes_delta=self.get_minutes_delta(event_form.minutesdelta)
+            type=self.get_type(event_form.type)
             
 
             if not facility:
@@ -114,12 +114,12 @@ class TCustomerData():
 
             customer = TCustomer.query.filter_by(realName=customername,jobTitle=title).first()
             if not customer:
-                customer=TCustomer({})
+                customer=TCustomer()
                 #customer.uid=self.get_id(TManager.query.count())
-                customer.ownerid=usermanager.uid
-                customer.name=customername
+                customer.managerID=usermanager.uid
+                customer.realName=customername
                 customer.jobTitle=title
-                customer.facilityid=facility_id
+                customer.facilityID=facility_id
                 customer.add_new()
                 print("customer add")
                 
@@ -127,9 +127,9 @@ class TCustomerData():
             else:
                 print(customername+title+"的資料已經存在資料庫內!")
             event=TEvent()
-            eventdic={"ownerid":usermanager.uid,"facilityid":facility_id,"customerList":str(customer.uid)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
-                    "nexttime":timedelta(days=day_delta)+starttime,"type":type,"description":activity_form.description,"nextstep":activity_form.nextstep,"recommand":"","status":0,
-                    "winrate":50,"priority":50,"customerType":0}
+            eventdic={"managerID":usermanager.uid,"facilityID":facility_id,"customerID":customer.uid,"startTime":starttime,"endTime":starttime+timedelta(minutes=minutes_delta),
+                    "nextTime":timedelta(days=day_delta)+starttime,"type":type,"description":event_form.description,"nextStep":event_form.nextstep,"recommand":"",
+                    "winrate":50,"priority":50}
             
             event.add_new(eventdic)
             """
@@ -155,7 +155,7 @@ class TCustomerData():
             msg=facilityname+customername+title+"新的拜訪資料已經建立!妳好棒!"
             
                             
-        return render_template('customer/add_new_activity.html', form=activity_form,msg=msg)
+        return render_template('customer/add_new_activity.html', form=event_form,msg=msg)
     def cal_customer_activity_adding_mode(self,activity_form,usermanager,isregister):
         msg=None
         print("--001cal_customer_activity_adding_mode--",isregister)
@@ -267,8 +267,6 @@ class TCustomerData():
                     customerid=r.customerID
                     cust=TCustomer.query.filter_by(uid=customerID).first()
                     eventlist.append(r)
-
-        
         
         for event in eventlist:
             customerid=event.customerID

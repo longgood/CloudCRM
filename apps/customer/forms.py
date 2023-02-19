@@ -9,7 +9,7 @@ from wtforms.validators import Email, DataRequired
 
 # 記錄各式規格
 
-class CreateActivityForm():
+class CreateEventForm():
 
     #我們這邊誰發起或是負責這項活動。
     #這次有哪些客戶參與
@@ -29,7 +29,7 @@ class CreateActivityForm():
         self.winrate="一般"
         self.customerType="臨床"
         
-        print("value:",value)
+        print("----forms, Value:",value)
         if 'facility_name' in value:
             self.facility_name=value['facility_name']
         if 'customer_name' in value:

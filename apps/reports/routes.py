@@ -4,7 +4,7 @@
 #from apps import db
 
 from apps.reports.datas import TData
-from apps.reports.forms import ModifyActivityForm
+from apps.reports.forms import ModifyEventForm
 """
 龍骨王股份有限公司
 """
@@ -50,7 +50,8 @@ def report_general():
     form=None
     
     if "modify" in request.form:
-        form=ModifyActivityForm(request.form)
+        form=ModifyEventForm(request.form)
+        print("form",form)
 
     #取得目前所有使用者資訊
     activityid=request.args.get('activityid')

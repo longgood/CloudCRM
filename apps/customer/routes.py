@@ -10,8 +10,8 @@ import random
 """
 龍骨王股份有限公司
 """
-from apps.customer.forms import CreateFacilityForm,CreateCustomerForm,CreateActivityForm
-from apps.authentication.models import TFacility,TEvent,TManager
+from apps.customer.forms import CreateFacilityForm,CreateCustomerForm,CreateEventForm
+from apps.authentication.models import TFacility,TEvent,TManager,TCustomer
 from apps.customer import blueprint
 from flask import render_template, redirect, url_for,request
 from flask_login import (
@@ -20,6 +20,22 @@ from flask_login import (
 )
 data=TCustomerData()
 import apps.customer.ExportScript as export
+
+
+@blueprint.route('/backup_read')
+def backup_read():
+    string=export.backup_read()
+    return string
+@blueprint.route('/backup_relationship')
+def backup_relationship():
+    string=export.backup_relationship()
+    return string
+@blueprint.route('/backup_check')
+def backup_check():
+    print("in route")
+    result=export.backup_check()
+    
+    return result
 
 @blueprint.route('/testdisp_database')
 def testdisp_database():
@@ -49,12 +65,12 @@ def customer_followup():
 @login_required
 def customer_activity():
     usermanager=current_user
-    activity_form = CreateActivityForm(request.form)
+    event_form = CreateEventForm(request.form)
     
     isregister=False
     if 'register' in request.form:
         isregister=True
-    return data.get_customer_activity(activity_form,usermanager,isregister)
+    return data.get_customer_event(event_form,usermanager,isregister)
 @blueprint.route('/customer_activity_adding_mode',methods=['GET', 'POST'])
 @login_required
 def customer_activity_adding_mode():
@@ -62,7 +78,7 @@ def customer_activity_adding_mode():
     
 
     
-    activity_form = CreateActivityForm(request.form)
+    activity_form = CreateEventForm(request.form)
     isregister=False
     if 'register' in request.form:
         isregister=True

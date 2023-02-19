@@ -8,48 +8,18 @@ from sqlalchemy.orm import backref
 from apps.authentication.util import hash_pass
 import datetime
 
-def TCustomer(TPeople):
 
-    __tablename__   = 'TCustomer'
-    type        =db.Column(db.Integer)
-    managerID   =db.Column(db.Integer, db.ForeignKey('TManager.uid'))
-    facilityID  =db.Column(db.Integer, db.ForeignKey('TFacility.uid'))
-    eventLIST   =db.relationship("TEvent", backref="TCustomer")
-    def __init__(self):
-        return
-    def __repr__(self):
-        return
-    def to_dict(self):
-       return {c.name: getattr(self, c.name) for c in self.__table__.columns}   
-       
-
-    def add_new(self,dic=None):
-        if dic:
-            for key in dic:
-                setattr(self, key, dic[key])
-
-        #db.session.flush()
-        db.session.add(self)
-        db.session.commit()
-        return   
 #---關聯資料庫多對多的定義---
-"""
-relationEventCustomer = db.Table('relationEventCustomer',
-                     db.Column('event_id', db.Integer, db.ForeignKey('TEvent.uid')),
-                     db.Column('customer_id', db.Integer, db.ForeignKey('TCustomer.uid'))
-                     )
-"""                     
                      
 relationProjectManager = db.Table('relationProjectManager',
                      db.Column('project_id', db.Integer, db.ForeignKey('TProject.uid')),
                      db.Column('manager_id', db.Integer, db.ForeignKey('TManager.uid'))
                      )
+ 
 relationProjectCustomer = db.Table('relationProjectCustomer',
                      db.Column('project_id', db.Integer, db.ForeignKey('TProject.uid')),
                      db.Column('customer_id', db.Integer, db.ForeignKey('TCustomer.uid'))
                      )
-
-
 relationManagerUser= db.Table('relationManagerUser',
                      db.Column('manager_id', db.Integer, db.ForeignKey('TManager.uid')),
                      db.Column('user_id', db.Integer, db.ForeignKey('TUser.uid'))
@@ -91,6 +61,7 @@ class TPeople(db.Model):
         return
     def to_dict(self):
        return {c.name: getattr(self, c.name) for c in self.__table__.columns}   
+
 class TManager(TPeople,UserMixin):
     __tablename__ = 'TManager'
     level           =db.Column(db.Integer)
@@ -102,7 +73,8 @@ class TManager(TPeople,UserMixin):
     activityLIST    =db.relationship("TActivity"    ,backref="TManager")
     eventLIST       =db.relationship("TEvent"       ,backref="TManager")
     submanagerLIST  =db.relationship('TManager'     ,remote_side=[bossID])   
-    
+
+
     customerLIST    =db.relationship("TCustomer"    ,backref="TManager")#在TFacility內
     invitationLIST  =db.relationship("TInvitation"  ,backref="TManager")    
     #------多對多的啟動方----------------    
@@ -114,16 +86,26 @@ class TManager(TPeople,UserMixin):
     def __init__(self, my_dict):
         for key in my_dict:
             if key=="password":
-                my_dict[key]=hash_pass(my_dict[key])
+                
+                if my_dict[key] is not None:
+                    try:
+                        my_dict[key]=hash_pass(my_dict[key])
+                    except:
+                        print("Error in Manager. type:",type(my_dict[key]),",val:",my_dict[key])
+                else:
+                    print("Manager Error:",my_dict[key],",zero assigned!")
+                    my_dict[key]=""
             setattr(self, key, my_dict[key])
     
     def __repr__(self):
-        return "Manager(姓名:'%s',職稱'%s')" % (self.realName,self.jobTitle) 
+        return "Manager(姓名:'%s',職稱'%s',帳號'%s')" % (self.realName,self.jobTitle,self.accountId) 
     def to_dict(self):
        return {c.name: getattr(self, c.name) for c in self.__table__.columns}  
     def add_new(self,dic=None):
         if dic:
             for key in dic:
+                if key=="password":
+                    my_dict[key]=hash_pass(my_dict[key])
                 setattr(self, key, dic[key])
 
         #db.session.flush()
@@ -138,7 +120,7 @@ class TUser(TPeople):
     chartNumber                =db.Column(db.String(64),unique=False)
     trainingMode               =db.Column(db.Integer,unique=False)
 
-    #=====RB
+    #=====RB===================
     shopPoints                  =db.Column(db.Integer,unique=False)
     activationStatus            =db.Column(db.Integer,unique=False)
     redeemedCoupons             =db.Column(db.String(64),unique=False)
@@ -154,10 +136,23 @@ class TUser(TPeople):
     deviceID = db.Column(db.Integer, db.ForeignKey('TDevice.uid'))
     def __init__(self):
         return
+    def __init__(self, my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])
     def __repr__(self):
-        return
+        return "使用者(患者)(姓名:'%s',職稱'%s')\n" % (self.realName,self.jobTitle) 
     def to_dict(self):
        return {c.name: getattr(self, c.name) for c in self.__table__.columns}   
+    def add_new(self,dic=None):
+        if dic:
+            for key in dic:
+                if key=="password":
+                    my_dict[key]=hash_pass(my_dict[key])
+                setattr(self, key, dic[key])
+
+        #db.session.flush()
+        db.session.add(self)
+        db.session.commit()
     
 class TFacility(db.Model):
     __tablename__ = 'TFacility'
@@ -165,7 +160,7 @@ class TFacility(db.Model):
     key                 =db.Column(db.String(128),unique=False)
     uploadStatus        =db.Column(db.Integer,unique=False)
     city                =db.Column(db.String(64),unique=False)
-    pruduct             =db.Column(db.String(32),unique=False)
+    productCode         =db.Column(db.String(32),unique=False)
     displayName         =db.Column(db.String(128),unique=False)
     registerTime        =db.Column(db.DateTime(timezone=True),unique=False,default=datetime.datetime.utcnow()+datetime.timedelta(hours=8))
     phone               =db.Column(db.String(32),unique=False)
@@ -180,7 +175,7 @@ class TFacility(db.Model):
     #------"自身"一對多的一方----------------    
     subfacilityLIST      =db.relationship('TFacility', remote_side=[bossID])
     #------一對多的一方---------------
-    activityLIST        =db.relationship("TActivity", backref="TFacility")
+    #activityLIST        =db.relationship("TActivity", backref="TFacility")
     userLIST            =db.relationship("TUser", backref="TFacility")
     #customerList        =db.relationship("TManager", backref="TFacility")#在TFacility內, 對應TManager內的customersFacilityID
     deviceLIST          =db.relationship("TDevice", backref="TFacility")#在TFacility內, 對應TDevice內的facilityID
@@ -195,12 +190,14 @@ class TFacility(db.Model):
     """
     def __init__(self):
         return
+    """
     def __init__(self, my_dict):
         for key in my_dict:
             setattr(self, key, my_dict[key])
+    """
     def __repr__(self):
-        return "Facility(id='%s', 名稱:'%s', 地址:'%s', 屬於客戶:'%s',活動次數:'%s'\n" % (
-                   self.id, self.name, self.address,self.customerLIST,self.eventList)
+        return "Facility(id='%s', 名稱:'%s', 地址:'%s'\n" % (
+                   self.uid, self.displayName, self.address)
     def to_dict(self):
        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
     def add_new(self,dic=None):
@@ -212,40 +209,7 @@ class TFacility(db.Model):
         db.session.add(self)
         db.session.commit()
         return
-    """
-        def check_key(self,dic,key,value=None):
-       
-        result=None
-        try:
-            result=dic[key]
-        except KeyError:
-            result=value
-        return result
-    def add_new(self,dic=None):
-    
-        result=False
-        if dic:
-            id=self.check_key(  dic,"id")
-        else:
-            id=self.id
-        if id is None:
-            print("錯誤ID",dic["id"])
-            return result
-        
-        fac=TFacility.query.filter_by(id=id).first()
-        if not fac:
-            if dic:
-                self.id          = self.check_key(  dic,"id") 
-                self.name  = self.check_key(  dic,"name")  
-                self.address    = self.check_key(  dic,"address") 
-                
-            db.session.add(self)
-            db.session.commit()
-            result=True
-        else:
-            print("---重複產出----")
-        return result
-    """
+
 class TActivity(db.Model):
     __tablename__   = 'TActivity'
     uid                 =db.Column(db.Integer, primary_key=True, autoincrement=True,unique=True)
@@ -259,17 +223,22 @@ class TActivity(db.Model):
     jointId             =db.Column(db.Integer,unique=False)
     uploadStatus        =db.Column(db.Integer,unique=False)
     duration            =db.Column(db.Integer,unique=False)
+
     score               =db.Column(db.Float,unique=False)
     
     #-----一對多的多方---------------
-    deviceID            = db.Column(db.Integer, db.ForeignKey('TDevice.uid'))
+    #deviceID            = db.Column(db.Integer, db.ForeignKey('TDevice.uid'))
     managerID           = db.Column(db.Integer, db.ForeignKey('TManager.uid'))
-    facilityID          = db.Column(db.Integer, db.ForeignKey('TFacility.uid'))
+    #facilityID          = db.Column(db.Integer, db.ForeignKey('TFacility.uid'))#改由userID內的facilityID去找
     userID              = db.Column(db.Integer, db.ForeignKey('TUser.uid'))
     def __init__(self):
         return
+    def __init__(self, my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])
     def __repr__(self):
-        
+        return "Activity(id='%s', 名稱:'%s'" % (
+                   self.key, self.dispName)        
         return
     def to_dict(self):
        return {c.name: getattr(self, c.name) for c in self.__table__.columns}   
@@ -293,16 +262,26 @@ class TDevice(db.Model):
     gpu                 =db.Column(db.String(64),unique=False)
     os                  =db.Column(db.String(64),unique=False)
     deviceMode          =db.Column(db.String(64),unique=False)
+    #-----一對多的一方---------------------
+    
+    #managerLIST            =db.relationship("TManager", backref="TDevice")
+    
     #-----一對多的多方---------------
     facilityID          =db.Column(db.Integer, db.ForeignKey('TFacility.uid'))
     #facilityLIST
-    #managerLIST
     #-----一對一的接受方----
     userLINK = db.relationship('TUser', backref=db.backref('TUser', uselist=False))
     
     def __init__(self):
         return
+    """
+    def __init__(self,my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])
+    """
     def __repr__(self):
+        return "Dev(id='%s',mac='%s'" % (
+                   self.uid, self.mac)
         return
     def to_dict(self):
        return {c.name: getattr(self, c.name) for c in self.__table__.columns}   
@@ -335,6 +314,9 @@ class TPrescription(db.Model):
     
     def __init__(self):
         return
+    def __init__(self, my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])
     def __repr__(self):
         return
     def to_dict(self):
@@ -364,6 +346,9 @@ class TContent(db.Model):
     settingLIST        =db.relationship('TSetting', backref='TContent')
     def __init__(self):
         return
+    def __init__(self, my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])
     def __repr__(self):
         return
     def to_dict(self):
@@ -443,27 +428,69 @@ class TEvent(db.Model):
     nextStep=db.Column(db.Text)
     #supervisor的建議。
     recommand=db.Column(db.Text)
-    
+    status=db.Column(db.Integer,default=0)
     priority=db.Column(db.Integer,default=50)
     winrate=db.Column(db.Integer,default=50)
-    customerType=db.Column(db.Integer,default=0)    
+    #customerType=db.Column(db.Integer,default=0)    
 
     ##--202301全部放在這搞定
     
     #--------一對多的多方-------------------    
     
     #--------一對多的多-------------------    
-    customerID      =db.Column(db.Integer, db.ForeignKey('TCustomer.uid'))#TEvent內#db.relationship('TManager', secondary=relationEventCustomer, lazy='subquery', backref=db.backref('customereventLIST', lazy=True))
     
     managerID       =db.Column(db.Integer, db.ForeignKey('TManager.uid'))#TEvent內一對多的多
     facilityID      =db.Column(db.Integer, db.ForeignKey('TFacility.uid'))#TEvent內一對多的多
     projectID       =db.Column(db.Integer, db.ForeignKey('TProject.uid'))#TEvent內一對多的多
+    customerID      =db.Column(db.Integer, db.ForeignKey('TCustomer.uid'))#TEvent內#db.relationship('TManager', secondary=relationEventCustomer, lazy='subquery', backref=db.backref('customereventLIST', lazy=True))
     
     
     def __init__(self):
         return
+    def __init__(self, my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])
     def __repr__(self):
+        return "Event(id='%s', 時間:'%s'\n" % (
+                   self.uid, self.startTime)
+        
+    def to_dict(self):
+       return {c.name: getattr(self, c.name) for c in self.__table__.columns}   
+       
+    def update(self,dic=None):
+        if dic:
+            for key in dic:
+                setattr(self, key, dic[key])
+
+        db.session.flush()
+        #db.session.add(self)
+        db.session.commit()
+    def add_new(self,dic=None):
+        if dic:
+            for key in dic:
+                setattr(self, key, dic[key])
+
+        #db.session.flush()
+        db.session.add(self)
+        db.session.commit()
         return
+class TCustomer(TPeople):
+    __tablename__   = 'TCustomer'
+    
+    type            =db.Column(db.Integer)                              #甚麼樣的類型與等級。
+    managerID       =db.Column(db.Integer, db.ForeignKey('TManager.uid'))
+    facilityID      =db.Column(db.Integer, db.ForeignKey('TFacility.uid'))
+    
+    eventLIST       =db.relationship("TEvent", backref="TCustomer")
+    def __init__(self):
+        return
+    def __init__(self, my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])
+    def __repr__(self):
+        return "Customer(id='%s', 名稱:'%s'\n" % (
+                   self.uid, self.realName)
+        
     def to_dict(self):
        return {c.name: getattr(self, c.name) for c in self.__table__.columns}   
        
@@ -476,7 +503,7 @@ class TEvent(db.Model):
         #db.session.flush()
         db.session.add(self)
         db.session.commit()
-        return
+        return   
 class TProject(db.Model):
     __tablename__   = 'TProject'
     uid                 =db.Column(db.Integer, primary_key=True, autoincrement=True,unique=True)
@@ -505,11 +532,15 @@ class TProject(db.Model):
     eventLIST       =db.relationship("TEvent", backref="TProject")#在TProject內
     #--------多對多的發起方
     managerLIST     =db.relationship('TManager',    secondary=relationProjectManager, lazy='subquery', backref=db.backref('projectLIST', lazy=True))
-    customerLIST    =db.relationship('TCustomer',   secondary=relationProjectCustomer, lazy='subquery', backref=db.backref('projectLIST', lazy=True))
+    #customerLIST    =db.relationship('TCustomer',   secondary=relationProjectCustomer, lazy='subquery', backref=db.backref('projectLIST', lazy=True))
+    
     
     
     def __init__(self):
         return
+    def __init__(self, my_dict):
+        for key in my_dict:
+            setattr(self, key, my_dict[key])
     def __repr__(self):
         return
     def to_dict(self):

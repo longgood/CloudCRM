@@ -105,12 +105,12 @@
 											
 										<div class="row">
 
-											<div class="col-2"><h6><input type="text" name=activityid id="activityid" style="width:0px;height:0px;background: transparent;" value={{act.id}}>{{loop.index}}.{{ act.facility |safe}}</h6>
+											<div class="col-2"><h6><input type="text" name=activityid id="activityid" style="width:0px;height:0px;background: transparent;" value={{act.uid}}>{{loop.index}}.{{ act.facility |safe}}</h6>
 											
 												
 											</div>
-											<div class="col-2"><h6>{{act.priority}}重要,{{act.winrate}}勝率	{{act.strtype}}<br>{{ act.customer |safe}}<br>從{{act.starttime.strftime("%H")}}:{{act.starttime.strftime("%M")}}<br>到{{act.endtime.strftime("%H")}}:{{act.endtime.strftime("%M")}}</h6></div>
-											<div class="col-1"><h6>{{ act.starttime.strftime("%m-%d") |safe}}<br>{{ act.nexttime.strftime("%m-%d") |safe}}</h6></div>
+											<div class="col-2"><h6>{{act.priority}}重要,{{act.winrate}}勝率	{{act.strtype}}<br>{{ act.customer |safe}}<br>從{{act.startTime.strftime("%H")}}:{{act.startTime.strftime("%M")}}<br>到{{act.endTime.strftime("%H")}}:{{act.endTime.strftime("%M")}}</h6></div>
+											<div class="col-1"><h6>{{ act.startTime.strftime("%m-%d") |safe}}<br>{{ act.nextTime.strftime("%m-%d") |safe}}</h6></div>
 											
 											
 											
@@ -120,13 +120,13 @@
 												<textarea name=description id="description_task" class="description" style="width:300px;height:200px;background-color:#FFF0D4;" >{{act.description|safe}}</textarea>
 											</div>
 											<div class="col-3">
-												<textarea name=nextstep id="nextstep" class="nextstep" style="width:300px;height:200px;background-color:#FFF0D4;" >{{act.nextstep|safe}}</textarea>
+												<textarea name=nextstep id="nextstep" class="nextstep" style="width:300px;height:200px;background-color:#FFF0D4;" >{{act.nextStep|safe}}</textarea>
 
 											</div>
 											<div class="col-1">
 													<button style="width:100%;height:30px;" type="submit" name="modify" class="edit_border">修改</button>
 													<div>:)</div>
-													<button style="width:100%;height:30px;background-color:#FFF0D4;""  onclick="confirmFunc({{act.id}})">刪除</button>
+													<button style="width:100%;height:30px;background-color:#FFF0D4;""  onclick="confirmFunc({{act.uid}})">刪除</button>
 											</div>
 											
 											
