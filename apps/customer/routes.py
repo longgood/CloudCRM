@@ -20,11 +20,11 @@ from flask_login import (
 )
 data=TCustomerData()
 import apps.customer.ExportScript as export
-
+import apps.customer.ExportScript_Read as reader
 
 @blueprint.route('/backup_read')
 def backup_read():
-    string=export.backup_read()
+    string=reader.backup_read()
     return string
 @blueprint.route('/backup_relationship')
 def backup_relationship():

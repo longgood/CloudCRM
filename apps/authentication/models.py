@@ -34,6 +34,7 @@ class TPeople(db.Model):
     __abstract__ = True
     
     uid             =db.Column(db.Integer, primary_key=True, autoincrement=True,unique=True)
+    key             =db.Column(db.String(64),unique=True)
     gender          =db.Column(db.Integer)
     height          =db.Column(db.Integer)
     weight          =db.Column(db.Integer)
@@ -190,11 +191,10 @@ class TFacility(db.Model):
     """
     def __init__(self):
         return
-    """
+    
     def __init__(self, my_dict):
         for key in my_dict:
             setattr(self, key, my_dict[key])
-    """
     def __repr__(self):
         return "Facility(id='%s', 名稱:'%s', 地址:'%s'\n" % (
                    self.uid, self.displayName, self.address)

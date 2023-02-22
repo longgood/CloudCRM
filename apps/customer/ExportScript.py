@@ -1047,8 +1047,8 @@ def query_lines(dics,attribute, value="",deltalen=0):
 import random
 
 
-def mysql_build_facility():
-    #元保宮
+def mysql01_build_facility():
+    #--手動建立元保宮
     facilityList=["803253C72E96","A85E4538610C"]
     for fkey in facilityList:
         f=TFacility.query.filter_by(key=fkey).first()
@@ -1058,11 +1058,39 @@ def mysql_build_facility():
             newfac.displayName="中國醫元保宮"
             db.session.add(newfac)
     db.session.commit()
-    #--從tapifacility建立facility
-    sql="select mac from tapifacility"
-    result=db.engine.execute(sql).fetchall()
+    #--從tapifacility建立facility 取得tapifacility內的mac碼，還建立TFacility
     
+    
+    sql="select mac from tapifacility"
+    macresult=db.engine.execute(sql).fetchall()
+    macLIST=[]
+    count=0
+    
+    
+    
+    result="機構現況:<br>"
+    for r in macresult:
+        if len(r[0])>0:
+            facs=TFacility.query.filter(TFacility.key.like(r[0]+"%")).all()
+            if facs:
+                for f in facs:
+                    pass
+                    #result=result+"TapiFmac:{0}=>TFkey:{1}<br>".format(r[0],f.key)
+            else:
+                count=count+1
+                if r[0] not in macLIST:
+                    macLIST.append(r[0])
+    for mac in macLIST:
+        #在這邊新增機構
+        sql="SELECT * FROM `TapiFacility` WHERE `mac`=\"{0}\"".format(mac)
+        apifacs=db.engine.execute(sql).fetchall()
+        for apifac in apifacs:
+            resultstr="結果:mac:{0},{1},{2},{3},{4},{5},{6}<br>".format(apifac[0],apifac[1],apifac[2],apifac[3],apifac[4],apifac[5],apifac[6])
+            result=result+resultstr
+                
+    return "待新增Facility數量:"+str(count)+",maclen:"+str(len(macLIST))+"<br>"+result
     """
+    "314BBC8C7694"
     很厲害的寫法
     sql="select mac from tapifacility"
     result=db.engine.execute(sql).fetchall()
@@ -1074,13 +1102,15 @@ def mysql_build_facility():
             if d not in devLIST:
                 devLIST.append(d.accountId)
     """
-def mysql_build_userfacility():
+def mysql02_build_userfacility():
     users=TUser.query.filter(TUser.facilityID.is_(None)).all()
     return str(users)
 def backup_check():
-    mysql_build_facility()
-    mysql_build_userfacility()
-    return ""
+    result="build facility and device <br>"
+    result=result+mysql01_build_facility()
+    result=result+"<br> 02 build userfacility relationship<br>"
+    #result=result+mysql02_build_userfacility()
+    return result
 def rela_test():
     ##00測試self reference的使用方式。
     #map_column, and db.relation
