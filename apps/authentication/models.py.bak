@@ -65,7 +65,7 @@ class TPeople(db.Model):
 
 class TManager(TPeople,UserMixin):
     __tablename__ = 'TManager'
-    level           =db.Column(db.Integer,default=0)
+    level           =db.Column(db.Integer)
     bossID          =db.Column(db.Integer, db.ForeignKey('TManager.uid'))
     #------一對多的多方----------------
     #customersFacilityID=db.Column(db.Integer, db.ForeignKey('TFacility.uid'))
