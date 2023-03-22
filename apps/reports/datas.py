@@ -127,6 +127,14 @@ class TData():
         
         return "完成!"
         """
+    def string_datetime(self,value,ref):
+        result=""
+        if value is None:
+            value=datetime.now()
+        #datetime.strptime(value, "%d/%m/%Y %H:%M:%S")
+        result=value.strftime(ref)
+        
+        return result
     def get_report_general(self,usermanager,form):
         print("----TYPE:",usermanager,usermanager.__tablename__)
         ownerid=usermanager.uid
@@ -139,9 +147,7 @@ class TData():
                 event.description=form.description
                 event.nextStep=form.nextstep  
                 event.update()
-                allevent=TEvent.query.all()
-                for e in allevent:
-                    print("事件:",e)
+
                
             else:
                 print("找不到可惡!")
@@ -156,7 +162,11 @@ class TData():
             type      =a.type
             customer_name=self.get_customer_name(a.customerID)
             facility_name=self.get_facility_name(a.facilityID)
-            
+
+            events[count].displayStartTime=self.string_datetime(a.startTime,"%H:%M")
+            events[count].displayEndTime=self.string_datetime(a.endTime,"%H:%M")
+            events[count].displayStartDate=self.string_datetime(a.startTime,"%m-%d")
+            events[count].displayNextDate=self.string_datetime(a.nextTime,"%m-%d")            
             events[count].customer=customer_name
             events[count].facility=facility_name
             events[count].strtype=self.get_type_str(a.type)
