@@ -59,8 +59,9 @@ class DebugConfig(Config):
         if  (os.environ.get('OS','')=="Windows_NT"):
             username="root"
             password="rraayy"
-            #username="cloudapi" #'3.1.154.25'
-            #password="54158175LG"
+
+            username="cloudapi" #'3.1.154.25'
+            password="54158175LG"
             hostip="18.142.186.21"
             db_name="rehabilitation"
     
