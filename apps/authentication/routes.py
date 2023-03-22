@@ -42,8 +42,11 @@ def login():
         password = request.form['password']
 
         # Locate user
-        user = TManager.query.filter_by(accountId=userid).first()
-        
+        user=TManager({})
+        print("UserID:",userid)
+        user=TManager.query.filter(TManager.accountId==userid).first()
+        print("right")
+
         # Check the password
         if user and verify_pass(password, user.password):
 
@@ -54,7 +57,7 @@ def login():
         return render_template('accounts/login.html',
                                msg='帳號或是密碼錯誤',
                                form=login_form)
-    print("CurrentUser:",current_user)
+    print("-----CurrentUser:",current_user)
     if not current_user.is_authenticated:
         return render_template('accounts/login.html',
                                form=login_form)

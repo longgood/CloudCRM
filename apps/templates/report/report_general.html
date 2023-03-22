@@ -109,7 +109,7 @@
 											
 												
 											</div>
-											<div class="col-2"><h6>{{act.priority}}重要,{{act.winrate}}勝率	{{act.strtype}}<br>{{ act.customer |safe}}<br>從{{act.startTime.strftime("%H")}}:{{act.startTime.strftime("%M")}}<br>到{{act.endTime.strftime("%H")}}:{{act.endTime.strftime("%M")}}</h6></div>
+											<div class="col-2"><h6>{{act.strpriority}}重要,{{act.strwinrate}}勝率	{{act.strtype}}<br>{{ act.customer |safe}}<br>從{{act.startTime.strftime("%H")}}:{{act.startTime.strftime("%M")}}<br>到{{act.endTime.strftime("%H")}}:{{act.endTime.strftime("%M")}}</h6></div>
 											<div class="col-1"><h6>{{ act.startTime.strftime("%m-%d") |safe}}<br>{{ act.nextTime.strftime("%m-%d") |safe}}</h6></div>
 											
 											
@@ -185,9 +185,9 @@
 					</div>
 					{% for cust in customer %}
 					<div class="row">
-						<div class="col"><p>{{ cust.id }}<p></div>
-						<div class="col"><p>{{ cust.name }}<p></div>
-						<div class="col"><p>{{cust.title}}<p></div>
+						<div class="col"><p>{{ cust.uid }}<p></div>
+						<div class="col"><p>{{ cust.realName }}<p></div>
+						<div class="col"><p>{{cust.jobTitle}}<p></div>
 					</div>
 					{% endfor %}
 					
@@ -203,8 +203,8 @@
 					</div>
 					{% for cust in facility %}
 					<div class="row">
-						<div class="col"><p>{{ cust.id }}<p></div>
-						<div class="col"><p>{{ cust.name }}<p></div>
+						<div class="col"><p>{{ cust.uid }}<p></div>
+						<div class="col"><p>{{ cust.displayName }}<p></div>
 				
 					</div>
 					{% endfor %}

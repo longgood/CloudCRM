@@ -204,15 +204,14 @@ class TCustomerData():
            
             
             
-            act=TEvent()
+            event=TEvent({})
             act_count=TEvent.query.count()
-            #id=self.get_id(act_count)
+
          
-            actdic={"ownerid":usermanager.uid,"facilityid":facility_id,"customerList":str(customer.uid)+";","starttime":starttime,"endtime":starttime+timedelta(minutes=minutes_delta),
-                    "nexttime":timedelta(days=day_delta)+starttime,"type":type,"description":activity_form.description,"nextstep":activity_form.nextstep,"recommand":"","status":0,
-                    "winrate":winrate,"priority":priority,"customerType":customerType}
-            
-            act.add_new(actdic)
+            actdic={"managerID":usermanager.uid,"facilityID":facility_id,"customerID":customer.uid,"startTime":starttime,"endTime":starttime+timedelta(minutes=minutes_delta),
+                    "nextTime":timedelta(days=day_delta)+starttime,"type":type,"description":activity_form.description,"nextStep":activity_form.nextstep,"recommand":"","status":0,
+                    "winrate":winrate,"priority":priority}
+            event.add_new(actdic)
            
             msg=facilityname+customername+title+"新的拜訪資料已經建立!妳好棒!"
         return activity_form,msg
@@ -222,7 +221,6 @@ class TCustomerData():
         facility_name=""
         customer_title=""
         cust=TCustomer.query.filter_by(realName=form.customer_name).first()
-        
         if cust:
             customer_title=cust.jobTitle
             fac=TFacility.query.filter_by(uid=cust.facilityID).first()
@@ -242,10 +240,8 @@ class TCustomerData():
         form.minutesdelta="十分鐘"
         
         activity_form,msg=self.cal_customer_activity_adding_mode(form,usermanager,isregister)
-        print("check001-activityform:",activity_form,",usermanager",usermanager)
         result_facility=reportdata.cal_report_facility_user(usermanager)
-        print("check002",result_facility)
-        
+        print("----------------------------end")
         return render_template('customer/add_new_activity_adding_mode.html', form=activity_form,msg=msg,activity=result_facility)
     #後續跟進
     def get_customer_followup(self,usermanager):
