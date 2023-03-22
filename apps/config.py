@@ -50,13 +50,12 @@ class DebugConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'longgooddb.bytes')
     
 
-    username="longgoodapi"
-    password="ji3cl3gj94MM"
-    hostip='13.215.160.174'
-    db_name='Rehabilitation'
+    username="crmweb" #'3.1.154.25'
+    password="54158175CRM"
+    hostip="18.142.186.21"
+    db_name="rehabilitation"
     isLocal=True
     if isLocal:
-        if  (os.environ.get('OS','')=="Windows_NT"):
             username="root"
             password="rraayy"
 
