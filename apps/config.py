@@ -60,8 +60,8 @@ class DebugConfig(Config):
             username="root"
             password="rraayy"
 
-            username="cloudapi" #'3.1.154.25'
-            password="54158175LG"
+            username="crmweb" #'3.1.154.25'
+            password="54158175CRM"
             hostip="18.142.186.21"
             db_name="rehabilitation"
     
