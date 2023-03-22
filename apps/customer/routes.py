@@ -19,41 +19,6 @@ from flask_login import (
     current_user
 )
 data=TCustomerData()
-import apps.customer.ExportScript as export
-import apps.customer.ExportScript_Read as reader
-
-@blueprint.route('/backup_read')
-def backup_read():
-    string=reader.backup_read()
-    return string
-@blueprint.route('/backup_relationship')
-def backup_relationship():
-    string=export.backup_relationship()
-    return string
-@blueprint.route('/backup_check')
-def backup_check():
-    print("in route")
-    result=export.backup_check()
-    
-    return result
-
-@blueprint.route('/testdisp_database')
-def testdisp_database():
-    string=export.testdisp_database()
-    return string
-@blueprint.route('/relation_database')
-def relation_database():
-    string=export.rela_test()
-    return string
-
-@blueprint.route('/export_database')
-def export_database():
-    string=export.crm_database()
-    return string
-@blueprint.route('/read_database')
-def read_database():
-    string=export.crm_read()
-    return string    
 @blueprint.route('/customer_followup')
 @login_required
 def customer_followup():
