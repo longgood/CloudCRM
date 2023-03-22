@@ -22,6 +22,8 @@ class Config(object):
     #SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'longgooddb.bytes')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = 'D:/testdata'
+    static_folder="./"
+    template_folder="./"
 
 class ProductionConfig(Config):
     print("--ProductionConfig--")

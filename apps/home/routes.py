@@ -21,6 +21,10 @@ def alter_db():
     result=db.engine.execute("ALTER TABLE TProject ADD endTime DATETIME ")
     return "updated"
 
+@blueprint.route('/webgl')
+def webgl():
+    return render_template('home/deploayWebGL/index.html', segment='index')
+
 @blueprint.route('/index')
 @login_required
 def index():
