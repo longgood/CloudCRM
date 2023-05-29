@@ -1,0 +1,21 @@
+<script>
+var videoElement = document.getElementById('videoElement');
+
+function startVideoStream() {
+    fetch('/video_feed')
+        .then(function (response) {
+            return response.blob();
+        })
+        .then(function (blob) {
+            var videoUrl = URL.createObjectURL(blob);
+            videoElement.src = videoUrl;
+            videoElement.play();
+        })
+        .catch(function (error) {
+            console.error('Error fetching video stream:', error);
+        });
+}
+
+// Call the startVideoStream function to begin receiving and displaying the video stream
+startVideoStream();
+</script>
