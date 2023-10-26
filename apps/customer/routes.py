@@ -60,7 +60,7 @@ def customer_facility():
         
         name = request.form['name']
         address = request.form['address']
-        facility = TFacility.query.filter_by(name=name).first()
+        facility = TFacility.query.filter_by(displayName=name).first()
         if facility:
             print("已經存在")
             return render_template('customer/add_new_facility.html',
@@ -79,7 +79,7 @@ def customer_facility():
 def facility_search():
     keyword = request.args.get('keyword')
     
-    data=TManager.query.filter_by(name=keyword).all()
+    data=TManager.query.filter_by(realName=keyword).all()
     result=""
     print("search",data)
     for r in data:
@@ -90,8 +90,8 @@ def facility_search():
 @login_required
 def customer_search():
     keyword = request.args.get('keyword')
-    
-    data=TManager.query.filter_by(name=keyword).all()
+    print("名字關鍵字:",keyword)
+    data=TManager.query.filter_by(realName=keyword).all()
     result=""
 
     for r in data:

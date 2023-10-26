@@ -135,62 +135,6 @@ def get_segment(request):
 
 
 
-#--測試mediapipe server
-import mediapipe as mp
-from flask import Response
-import cv2
-import random
-mp_drawing = mp.solutions.drawing_utils          # mediapipe 繪圖方法
-mp_drawing_styles = mp.solutions.drawing_styles  # mediapipe 繪圖樣式
-mp_hands = mp.solutions.hands                    # mediapipe 偵測手掌方法
-
-video = cv2.VideoCapture(0)
-hands=mp_hands.Hands(model_complexity=0,min_detection_confidence=0.5,min_tracking_confidence=0.5)
-def gen(video,hands):
-    while True:
-        success, image = video.read()
-        image = cv2.flip(image, 1)
-        hand_results = hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-        size=image.shape
-        w = size[1]        # 取得畫面寬度
-        h = size[0]        # 取得畫面高度
-        
-
-
-        if hand_results.multi_hand_landmarks:
-            for hand_landmarks in hand_results.multi_hand_landmarks:
-                x = hand_landmarks.landmark[7].x * w   # 取得食指末端 x 座標
-                y = hand_landmarks.landmark[7].y * h   # 取得食指末端 y 座標
-                # 將節點和骨架繪製到影像中
-                mp_drawing.draw_landmarks(
-                    image,
-                    hand_landmarks,
-                    mp_hands.HAND_CONNECTIONS,
-                    mp_drawing_styles.get_default_hand_landmarks_style(),
-                    mp_drawing_styles.get_default_hand_connections_style())
-        
-        #image=cv2.rectangle(image,(rx,ry),(rx+80,ry+80),(0,0,255),5)   # 畫出觸碰區
-        frame_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
-        frame_gray = cv2.equalizeHist(frame_gray)
-        
-
-        """
-        faces = face_cascade.detectMultiScale(frame_gray)
-
-        for (x, y, w, h) in faces:
-            center = (x + w//2, y + h//2)
-            cv2.putText(image, "X: " + str(center[0]) + " Y: " + str(center[1]), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-            image = cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
-
-            faceROI = frame_gray[y:y+h, x:x+w]
-        """
-        ret, jpeg = cv2.imencode('.jpg', image)
-
-        frame = jpeg.tobytes()
-        
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 
 

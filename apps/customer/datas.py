@@ -101,21 +101,20 @@ class TCustomerData():
             minutes_delta=self.get_minutes_delta(event_form.minutesdelta)
             type=self.get_type(event_form.type)
             
-
+            print("FacilityName:",facilityname,",F:",facility)
             if not facility:
                 fac=TFacility({})
                 #fac.uid=self.get_id(TFacility.query.count())
-                fac.realName=facilityname
+                fac.displayName=facilityname
                 fac.add_new()
                 facility_id=fac.uid
-                print("facility add")
+                print("facility add",fac.uid,fac.key,fac.displayName)
             else:
                 facility_id=facility.uid
 
             customer = TCustomer.query.filter_by(realName=customername,jobTitle=title).first()
             if not customer:
                 customer=TCustomer()
-                #customer.uid=self.get_id(TManager.query.count())
                 customer.managerID=usermanager.uid
                 customer.realName=customername
                 customer.jobTitle=title
@@ -204,7 +203,7 @@ class TCustomerData():
            
             
             
-            event=TEvent({})
+            event=TEvent()
             act_count=TEvent.query.count()
 
          

@@ -1,3 +1,11 @@
+
+#Windows
+source env/bin/activate
+set FLASK_ENV=development
+set FLASK_DEBUG=True
+set FLASK_APP=run.py
+flask run --host="0.0.0.0" --port=80
+
 #快速版
 source env/bin/activate
 export FLASK_ENV=development

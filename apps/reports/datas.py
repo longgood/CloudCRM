@@ -324,8 +324,8 @@ class TData():
                         
                         
                         customerN=customerN+1
-                        
-                fac["name"]=fac["priority"]+"優先,"+fac["winrate"]+"勝率"+fac["name"]+"-"+fac["customer_name"]        
+                namestring="{0}優先,{1}勝率,{2}-{3}".format(fac["priority"],fac["winrate"],fac["name"],fac["customer_name"])
+                fac["name"]=namestring
                 if passdate<=now:
                     fac["name"]=fac["name"]+"<font color=\"red\">過期日:"+passdate.strftime("%m-%d")+"</font>"
                 else:
