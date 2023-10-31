@@ -2,8 +2,6 @@
 
 
 {% block title %} 更新與檢視今日商務活動{% endblock %} 
-
-
 {% block adding_modecontent %}
 										{% for act in activity %}
 										<div>
@@ -17,8 +15,8 @@
 												<h6>{{ act.customer |safe}}</h6>
 												<br>
 												<form method="post" action="" class="mt-4">
-													<input type="text" name=customer_name id="customer_name" style="width:0px;height:0px;background: transparent;" value={{act.customer_name|safe}}>
-													<input type="text" name=facilityid id="facilityid" style="width:0px;height:0px;background: transparent;" value={{act.facilityid|safe}}>
+													<input type="text" name=customer_name id="customer_name" style="width:0px;height:0px;background: transparent;" value="{{act.customer_name|safe}}">
+													<input type="text" name=facilityid id="facilityid" style="width:0px;height:0px;background: transparent;" value="{{act.facilityid|safe}}">
 													<input type="text" name=style id="type" style="width:0px;height:0px;background: transparent;" value={{act.type|safe}}>
 													
 													
@@ -58,7 +56,7 @@
 														
 													</select>	
 													
-													<h5>下次拜訪時間</h5>
+													<h5>下次拜訪時間呢</h5>
 													<select name=timedelta style="width:300px;" >
 														<option>兩天後</option>
 														<option>一周後</option>
@@ -72,6 +70,8 @@
 													
 													<div class="d-grid">
 														<button type="submit" name="register" class="btn btn-gray-300">新增</button>
+														
+														
 													</div>
 												</form>	
 												</div>

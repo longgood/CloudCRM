@@ -174,7 +174,7 @@ class TCustomerData():
             print("--002 cal_customer_activity_adding_mode:Facility:",facility)
         
             if not facility:
-                fac=TFacility()
+                fac=TFacility({})
                 #fac.uid=self.get_id(TFacility.query.count())
                 fac.displayName=facilityname
                 fac.add_new()
@@ -184,7 +184,7 @@ class TCustomerData():
             else:
                 facility_id=facility.uid
             customer = TCustomer.query.filter_by(realName=customername,jobTitle=title).first()
-            print("姓名:",customername,",取得:",customer.realName)
+            
             if not customer:
                 customer=TCustomer()
                 #customer.uid=self.get_id(TManager.query.count())
@@ -199,6 +199,7 @@ class TCustomerData():
                 #db.session.add(customer)
                 
             else:
+                print("姓名:",customername,",取得:",customer.realName)
                 print(customername+title+"的資料已經存在資料庫內!")
            
             
@@ -214,7 +215,12 @@ class TCustomerData():
            
             msg=facilityname+customername+title+"新的拜訪資料已經建立!妳好棒!"
         return activity_form,msg
+        
+    """
+    跟進是新增行程模式
+    """
     def get_customer_activity_adding_mode(self,form,usermanager,isregister):
+
         now_dt = datetime.today() 
         now_dt_format = now_dt.strftime('%Y-%m-%dT%H:%M')
         facility_name=""
@@ -239,8 +245,11 @@ class TCustomerData():
         form.minutesdelta="十分鐘"
         
         activity_form,msg=self.cal_customer_activity_adding_mode(form,usermanager,isregister)
+        if usermanager is None:
+            print("錯誤!! customer datas 244")
+        
         result_facility=reportdata.cal_report_facility_user(usermanager)
-        print("----------------------------end")
+        
         return render_template('customer/add_new_activity_adding_mode.html', form=activity_form,msg=msg,activity=result_facility)
     #後續跟進
     def get_customer_followup(self,usermanager):

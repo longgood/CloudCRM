@@ -40,13 +40,12 @@ def customer_activity():
 @login_required
 def customer_activity_adding_mode():
     usermanager=current_user
-    
-
-    
     activity_form = CreateEventForm(request.form)
     isregister=False
+
     if 'register' in request.form:
         isregister=True
+    
     return data.get_customer_activity_adding_mode(activity_form,usermanager,isregister)    
 @blueprint.route('/customer_customer')
 @login_required

@@ -309,7 +309,44 @@ class TData():
                     if main_facust == a_facust:
                         
                         customer.append(a.customer)
-                        fac["customer"]=fac["customer"]+"<strong>"+str(a.startTime).split(" ")[0]+":"+a.strtype+a.customer+"</strong><br>"+a.description+"<br><u>下一步</u><br>"+a.nextStep+"<br>"
+                        
+
+                        
+                        time_string="-"
+                        try:
+                            
+                            if a.startTime is not None:
+                                time_string=str(a.startTime).split(" ")[0]
+  
+                        except:
+                            pass
+                        
+                        next_step_str="-"
+                        try:
+                            if a.nextStep is not None:
+                                next_step_str=a.nextStep
+                        except:
+                            pass
+                            
+                        description_str="-"
+                        try:
+                            if a.description is not None:
+                                description_str=a.description
+                        except:
+                            pass
+                        strtype_str="-"
+                        try:
+                            if a.strtype is not None:
+                                strtype_str=a.strtype
+                        except:
+                            pass
+                        customer_str="-"
+                        try:
+                            if a.customer is not None:
+                                customer_str=a.customer
+                        except:
+                            pass
+                        fac["customer"]=fac["customer"]+"<strong>"+time_string+":"+strtype_str+customer_str+"</strong><br>"+description_str+"<br><u>下一步</u><br>"+next_step_str+"<br>"
                         fac["facilityid"]=main.facilityID
                         fac["customerid"]=main.customerID
                         fac["activityid"]=main.uid
@@ -331,6 +368,11 @@ class TData():
                 else:
                     fac["name"]=fac["name"]+"追蹤日:"+passdate.strftime("%m-%d")
                 result_facility.append(fac)
+                
+                
+        
+
+        
         return result_facility
     def cal_report_facility_user(self,usermanager):
     

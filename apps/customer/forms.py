@@ -68,9 +68,58 @@ class CreateFacilityForm(FlaskForm):
 
 
 class CreateCustomerForm(FlaskForm):
-
-
+    def __init__(self,value):
+        
+        print("***CREATE CUSTOMER FORM",value['customer_name'])
     """
+    def __init__(self,value):
+        self.facility_name=""
+        self.customer_name=""
+        self.customer_title=""
+        self.starttime=""
+        self.endtime=""
+        self.type=0  
+        self.description="none"    
+        self.nextstep=""    
+        self.recommand=""    
+        self.timedelta="哇哈哈"
+        self.minutesdelta="測試"
+        self.priority="一般"
+        self.winrate="一般"
+        self.customerType="臨床"
+        
+        print("----forms, Value:",value)
+        if 'facility_name' in value:
+            self.facility_name=value['facility_name']
+        if 'customer_name' in value:
+            self.customer_name=value['customer_name']
+        if 'customer_title' in value:
+            self.customer_title=value['customer_title']
+        
+        if 'starttime' in value:
+            self.starttime=value['starttime']
+        if 'endtime' in value:
+            self.endtime=value['endtime']
+        if 'type' in value:
+            self.type=value['type']    
+        if 'description' in value:
+            self.description=value['description']    
+        if 'nextstep' in value:
+            self.nextstep=value['nextstep']    
+        if 'recommand' in value:
+            self.recommand=value['recommand']    
+        if 'timedelta' in value:
+            self.timedelta=value['timedelta']    
+        if 'minutesdelta' in value:
+            self.minutesdelta=value['minutesdelta']   
+        if 'priority' in value:
+            self.priority=value['priority']   
+        if 'winrate' in value:
+            self.winrate=value['winrate']   
+        if 'customerType' in value:
+            self.customerType=value['customerType']     
+
+
     userid  =StringField('UserId',id='userid_create',validators=[DataRequired()])
     email = StringField('Email',
                       id='email_create',
