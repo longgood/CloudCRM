@@ -107,6 +107,8 @@ def register_user():
         return render_template('accounts/register_user.html', form=create_account_form)
 @blueprint.route('/register', methods=['GET', 'POST'])
 def register():
+
+    print("run register")
     create_account_form = CreateAccountForm(request.form)
     if 'register_manager' in request.form:
 

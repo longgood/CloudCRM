@@ -20,6 +20,9 @@ class LoginForm(FlaskForm):
 
 
 class CreateAccountForm(FlaskForm):
+
+    print("**在此介紹:",FlaskForm)
+
     userid  =StringField('UserId',id='userid_create',validators=[DataRequired()])
     email = StringField('Email',
                       id='email_create',

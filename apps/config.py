@@ -35,14 +35,16 @@ class ProductionConfig(Config):
     REMEMBER_COOKIE_DURATION = 3600
 
     # PostgreSQL database
+    """
     SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}'.format(
         config('DB_ENGINE', default='mysql'),
-        config('DB_USERNAME', default='longgoodapi'),
-        config('DB_PASS', default='ji3cl3gj94MM'),
-        config('DB_HOST', default='13.215.160.174'),
+        config('DB_USERNAME', default='***'),
+        config('DB_PASS', default='***'),
+        config('DB_HOST', default='**'),
         config('DB_PORT', default=3306),
         config('DB_NAME', default='dbtest')
     )
+    """
 class DebugConfig(Config):
     print("--DebugConfig--")
     DEBUG = True
@@ -52,42 +54,6 @@ class DebugConfig(Config):
     
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'longgooddb.bytes')
     
-    """
-    username="crmweb" #'3.1.154.25'
-    password="54158175CRM"
-    hostip="18.142.186.21"
-    db_name="rehabilitation"
-    isLocal=True
-    
-    
-    
-    
-    #username="cloudapi" #'3.1.154.25'
-    #password="54158175LG"
-        
-        #jp
-    port=12105
-    hostip="0.tcp.jp.ngrok.io"
-    
-    
-    if isLocal:
-            username="root"
-            password="rraayy"
-
-            #username="crmweb" #'3.1.154.25'
-            #password="54158175CRM"
-            hostip="localhost"
-            db_name="rehabilitation"
-    
-    SQLALCHEMY_DATABASE_URI='{}://{}:{}@{}:{}/{}'.format(
-        'mysql',
-        username,
-        password,
-        hostip,
-        3306,
-        db_name)
-    """
-
     
     
 # Load all possible configurations
