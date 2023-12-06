@@ -8,7 +8,7 @@
 										
 										<div>
 										<div class="row">
-											<div class="col-2"><h6><strong>{{loop.index}}</strong></h6></div>
+											<div class="col-2"><h6><strong>{{loop.index0}}</strong></h6></div>
 											
 											<div class="col-10">
 											<details>
@@ -30,16 +30,23 @@
 													
 													
 													<h5>優先順序</h5>
-													<select name=priority style="width:300px;" >
-														<option>一般</option>
-														<option>高</option>
-														<option>低</option>
+													<select name=priority style="width:300px;">
+														{% for option in ["一般", "高", "低"] %}
+														<option value="{{ option }}" {% if option == act.priority %}selected{% endif %}>
+															{{ option }}
+														</option>
+														{% endfor %}
+													
+													
+														
 													</select>
 													<h5>勝率</h5>
-														<select name=winrate style="width:300px;" >
-															<option>一般</option>
-															<option>高</option>
-															<option>低</option>
+														<select name=winrate style="width:300px;">
+														{% for option in ["一般", "高", "低"] %}
+														<option value="{{ option }}" {% if option == act.winrate %}selected{% endif %}>
+															{{ option }}
+														</option>
+														{% endfor %}
 														</select>
 													<h5>客戶類型</h5>
 														<select name=customerType style="width:300px;" >
@@ -85,7 +92,7 @@
 
 										{% endfor %}
 										
-<br> 一般等級
+<br> 一般等級---------------------
 
 
 
@@ -116,13 +123,13 @@
 													
 													
 													<h5>優先順序</h5>
-													<select name=priority style="width:300px;" >
+													<select name=priority style="width:300px;" value="{{act.priority|safe}}">
 														<option>一般</option>
 														<option>高</option>
 														<option>低</option>
 													</select>
 													<h5>勝率</h5>
-														<select name=winrate style="width:300px;" >
+														<select name=winrate style="width:300px;" value="{{act.winrate|safe}}">
 															<option>一般</option>
 															<option>高</option>
 															<option>低</option>
@@ -202,16 +209,20 @@
 				
 				
 				<h5>優先順序</h5>
-				<select name=priority style="width:300px;" >
-					<option>一般</option>
-					<option>高</option>
-					<option>低</option>
+				<select name=priority style="width:300px;" value="{{act.priority|safe}}">
+					{% for option in ["一般", "高", "低"] %}
+					<option value="{{ option }}" {% if option == act.priority %}selected{% endif %}>
+						{{ option }}
+					</option>
+					{% endfor %}
 				</select>
 				<h5>勝率</h5>
-					<select name=winrate style="width:300px;" >
-						<option>一般</option>
-						<option>高</option>
-						<option>低</option>
+					<select name=winrate style="width:300px;" value="{{act.winrate|safe}}">
+						{% for option in ["一般", "高", "低"] %}
+						<option value="{{ option }}" {% if option == act.winrate %}selected{% endif %}>
+							{{ option }}
+						</option>
+						{% endfor %}
 					</select>
 				<h5>客戶類型</h5>
 					<select name=customerType style="width:300px;" >
