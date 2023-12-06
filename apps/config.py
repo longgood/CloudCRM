@@ -12,7 +12,8 @@ class Config(object):
     # Set up the App SECRET_KEY
     SECRET_KEY = config('SECRET_KEY', default='321ES#p%reAA_009AC') #SECRET_KEY = config('SECRET_KEY', default='S#perS3crEt_007')
     LANGUAGES = ['en', 'zh','ja','fr']
-    
+    POOL_SIZE=20
+    MAX_OVERFLOW=0
     BABEL_DEFAULT_LOCALE = 'en'
     BABEL_DEFAULT_TIMEZONE = 'UTC'
     # This will create a file in <app> FOLDER

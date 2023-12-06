@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Multiple Links as Zip</title>
+</head>
+<body>
+    <button onclick="downloadMultipleLinks()">Download as Zip</button>
+    <button onclick="raydownloadMultipleLinks()">RAYDownload as Zip</button>
+
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+
+	<script>
+			async function raydownloadMultipleLinks() {
+			// Array of download links
+			const links = [
+                'https://unec.edu.az/application/uploads/2014/12/pdf-sample.pdf',
+				// Add more links as needed
+			];
+
+			// Create a new instance of JSZip
+			const zip = new JSZip();
+
+			// Function to fetch and add each file to the zip
+			const addFileToZip = async (link) => {
+				try {
+					const response = await fetch(link);
+					
+					if (!response.ok) {
+						throw new Error(`Failed to fetch ${link}. Status: ${response.status} ${response.statusText}`);
+					}
+
+					const data = await response.blob();
+					zip.file(link.split('/').pop(), data);
+					console.log(`File added: ${link}`);
+				} catch (error) {
+					console.error(`Error adding file: ${link}`, error);
+				}
+			};
+
+			// Use Promise.all to fetch all files concurrently
+			await Promise.all(links.map(addFileToZip));
+
+			// Generate the zip file
+			const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+			// Create a download link and trigger the download
+			const downloadLink = document.createElement('a');
+			downloadLink.href = URL.createObjectURL(zipBlob);
+			downloadLink.download = 'downloadedFiles.zip';
+			document.body.appendChild(downloadLink);
+			downloadLink.click();
+			document.body.removeChild(downloadLink);
+
+			console.log('Download initiated');
+		}
+	
+	</script>
+
+    <script>
+        async function downloadMultipleLinks() {
+            // Array of download links
+            const links = [
+                'http://cloud.longgood.com.tw/download/PCODGMBRGZ3DM4RUOFZDJNMMG4ZDAMRWGQ2DNUBVGQ2TAMNSWQYISN6QZMVM5TYDACNE2CGW',
+                'http://cloud.longgood.com.tw/download/PCODGMBRGZ3DM4RUOFZDJNMMG4ZDAMRWGQ2DNUBVGQY3KMFSWA2IYN6QZMVM5TYDACNJOCG3',
+				'http://cloud.longgood.com.tw/download/PCODGMBRGZ3DM4RUOFZDJNMMG4ZDAMRWGQ2DNUBVGQYTIN5RWSYIQN6QZMVM5TYDACNKMCG7',
+                // Add more links as needed
+            ];
+
+            // Create a new instance of JSZip
+            const zip = new JSZip();
+
+            // Function to fetch and add each file to the zip
+            const addFileToZip = async (link) => {
+                const response = await fetch(link);
+                const data = await response.blob();
+                zip.file(link.split('/').pop(), data);
+            };
+
+            // Use Promise.all to fetch all files concurrently
+            await Promise.all(links.map(addFileToZip));
+
+            // Generate the zip file
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+            // Create a download link and trigger the download
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(zipBlob);
+            downloadLink.download = 'downloadedFiles.zip';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+    </script>
+</body>
+</html>

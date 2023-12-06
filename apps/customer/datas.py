@@ -187,23 +187,15 @@ class TCustomerData():
             
             if not customer:
                 customer=TCustomer()
-                #customer.uid=self.get_id(TManager.query.count())
                 customer.ownerid=usermanager.uid
                 customer.name=customername
                 customer.title=title
                 customer.facilityid=facility_id
                 customer.add_new()
                 
-                
-
-                #db.session.add(customer)
-                
             else:
                 print("姓名:",customername,",取得:",customer.realName)
                 print(customername+title+"的資料已經存在資料庫內!")
-           
-            
-            
             event=TEvent()
             act_count=TEvent.query.count()
 

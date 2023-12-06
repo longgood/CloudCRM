@@ -16,7 +16,9 @@ from flask_login import (
     current_user
 )
 data=TData()
-
+@blueprint.route("/download")
+def download():
+    return render_template('report/download.html')
 @blueprint.route('/reports_write')
 def reports_write():
     data.write_activitylist()
