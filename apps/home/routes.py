@@ -18,6 +18,9 @@ def alter_db():
 @blueprint.route('/webgl')
 def webgl():
     return render_template('home/webglIndex.html', segment='index')
+@blueprint.route('/webgl_test')
+def webgl_test():
+    return render_template('home/webglIndex_test.html', segment='index')
 @blueprint.route('/webglex')
 def webglex():
     return render_template('home/deploayWebGL/index.html', segment='index')
