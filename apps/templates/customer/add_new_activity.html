@@ -91,17 +91,23 @@
 								
 								</div>
 								<form method="post" action="" class="mt-4">
-								<h5>機構/公司</h5>
+								<h5>*機構/公司</h5>
 								<input type="text" name=facility_name id="facility_name" style="width:300px;" onkeyup="searchkey_event(this.value,this.id,'sel_facility','facility_search',event)" placeholder="醫院機構" value={{form.facility_name}}>
 								<select multiple="multiple" id="sel_facility" onchange="search_onchange_facility('facility_name')" style="width:300px;display:none" >
 								</select>
 								
-								<h5>客戶姓名</h5>
+								<h5>*客戶姓名</h5>
 								<input type="text" name=customer_name id="customer_name" style="width:300px;" onkeyup="searchkey_event(this.value,this.id,'sel_customer','customer_search',event)" placeholder="陳大成" value={{form.customer_name}} >
 								<select multiple="multiple" id="sel_customer" onchange="search_onchange_customer('customer_name')" style="width:300px;display:none" >
-								</select>職稱
-								
+								</select>
+								職稱
 								<input type="text" name=customer_title id="customer_title" style="width:150px;" placeholder="復健部主任" value={{form.customer_title}} >
+								
+								<h5>聯繫Email</h5>
+								<input type="text" name=customer_email id="customer_email" style="width:300px;" placeholder="abc@gmail.com" value={{form.customer_email}} >
+								手機
+								<input type="text" name=customer_cellphone id="customer_cellphone" style="width:150px;" placeholder="0922123123" value={{form.customer_cellphone}} >
+								
 								
 								<script>
 									<!--

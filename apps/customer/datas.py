@@ -95,7 +95,8 @@ class TCustomerData():
             title=event_form.customer_title
             facility = TFacility.query.filter_by(displayName=facilityname).first()
             starttime=datetime.strptime(event_form.starttime, "%Y-%m-%dT%H:%M")
-            
+            email=event_form.customer_email
+            cellphone=event_form.customer_cellphone
             
             day_delta=self.get_day_delta(event_form.timedelta)
             minutes_delta=self.get_minutes_delta(event_form.minutesdelta)
@@ -119,6 +120,9 @@ class TCustomerData():
                 customer.realName=customername
                 customer.jobTitle=title
                 customer.facilityID=facility_id
+                customer.cellPhone=cellphone
+                customer.eMail=email
+                
                 customer.add_new()
                 print("customer add")
                 
@@ -151,7 +155,7 @@ class TCustomerData():
             #db.session.add(act)    
             #db.session.commit()
             """
-            msg=facilityname+customername+title+"新的拜訪資料已經建立!妳好棒!"
+            msg=facilityname+customername+title+",新的拜訪資料已經建立!妳好棒!"
             
                             
         return render_template('customer/add_new_activity.html', form=event_form,msg=msg)

@@ -17,6 +17,8 @@ class CreateEventForm():
         self.facility_name=""
         self.customer_name=""
         self.customer_title=""
+        self.customer_email=""
+        self.customer_cellphone=""
         self.starttime=""
         self.endtime=""
         self.type=0  
@@ -36,7 +38,10 @@ class CreateEventForm():
             self.customer_name=value['customer_name']
         if 'customer_title' in value:
             self.customer_title=value['customer_title']
-        
+        if 'customer_email' in value:
+            self.customer_email=value['customer_email']
+        if 'customer_cellphone' in value:
+            self.customer_cellphone=value['customer_cellphone']
         if 'starttime' in value:
             self.starttime=value['starttime']
         if 'endtime' in value:
