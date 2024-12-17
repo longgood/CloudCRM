@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Phaser Mental Training Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // Configuring the Phaser game
+        const config = {
+            type: Phaser.AUTO,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+
+        // Initializing the game
+        let game = new Phaser.Game(config);
+        let tutorialText;
+        let bucket;
+        let apples = [];
+        let oranges = [];
+        let score = 0;
+        let applesInBucket = 0;
+        let loadingText;
+
+        function preload() {
+            // Display loading text
+            loadingText = this.add.text(window.innerWidth / 2, window.innerHeight / 2, 'Loading...', { fontSize: '32px', fill: '#ffffff' }).setOrigin(0.5);
+            
+            // Load any necessary assets
+            this.load.image('background', '/static/webgame/background.jpg');
+            this.load.image('apple', '/static/webgame/apple.png');
+            this.load.image('orange', '/static/webgame/orange.png');
+            this.load.image('bucket', '/static/webgame/bucket.png');
+        }
+
+        function create() {
+            // Remove loading text
+            loadingText.destroy();
+
+            // Set background image
+            this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background').setDisplaySize(window.innerWidth, window.innerHeight);
+
+            // Display tutorial dialog for 2 seconds
+            const tutorialBox = this.add.graphics();
+            tutorialBox.fillStyle(0x000000, 0.8);
+            tutorialBox.fillRect(window.innerWidth / 4 - 20, window.innerHeight / 4 - 20, 500, 100);
+            tutorialText = this.add.text(window.innerWidth / 4, window.innerHeight / 4, 'Drag 3 apples and M oranges to the bucket!', { fontSize: '32px', fill: '#ffffff' });
+            this.time.delayedCall(2000, () => {
+                tutorialText.setVisible(false);
+                tutorialBox.setVisible(false);
+                startTask.call(this);
+            });
+        }
+
+        function update() {
+            // Regular game updates, if needed
+        }
+
+        function startTask() {
+            // Create bucket on the right side
+            bucket = this.add.image(window.innerWidth - 100, window.innerHeight - 100, 'bucket').setScale(0.5);
+
+            // Create apples and oranges on the left side
+            for (let i = 0; i < 5; i++) {
+                let apple = this.add.image(100, 100 + i * 60, 'apple').setScale(0.5).setInteractive();
+                this.input.setDraggable(apple);
+                apples.push(apple);
+            }
+
+            for (let i = 0; i < 3; i++) {
+                let orange = this.add.image(200, 100 + i * 60, 'orange').setScale(0.5).setInteractive();
+                this.input.setDraggable(orange);
+                oranges.push(orange);
+            }
+
+            // Enable dragging of apples and oranges
+            this.input.on('dragstart', (pointer, gameObject) => {
+                gameObject.setAlpha(0.5);
+            });
+
+            this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+                gameObject.x = dragX;
+                gameObject.y = dragY;
+            });
+
+            this.input.on('dragend', (pointer, gameObject) => {
+                if (Phaser.Geom.Intersects.RectangleToRectangle(gameObject.getBounds(), bucket.getBounds())) {
+                    // Show effect when item is dropped in the bucket
+                    this.tweens.add({
+                        targets: gameObject,
+                        y: bucket.y + 20,
+                        scaleX: 0.3,
+                        scaleY: 0.3,
+                        duration: 500,
+                        onComplete: () => {
+                            gameObject.destroy();
+                            if (gameObject.texture.key === 'apple') {
+                                applesInBucket++;
+                            }
+                            checkCompletion.call(this);
+                        }
+                    });
+                } else {
+                    // Reset item appearance and show error effect
+                    gameObject.setAlpha(1);
+                    this.tweens.add({
+                        targets: gameObject,
+                        scaleX: 0.6,
+                        scaleY: 0.6,
+                        yoyo: true,
+                        duration: 200,
+                        tint: 0xff0000
+                    });
+                }
+            });
+        }
+
+        function checkCompletion() {
+            // Check if three apples are in the bucket
+            if (applesInBucket >= 3) {
+                const completeText = this.add.text(window.innerWidth / 2, window.innerHeight / 2, 'Complete!', { fontSize: '48px', fill: '#00ff00' }).setOrigin(0.5);
+                this.tweens.add({
+                    targets: completeText,
+                    alpha: { from: 0, to: 1 },
+                    scale: { from: 1, to: 2 },
+                    duration: 1000,
+                    ease: 'Power2'
+                });
+            }
+        }
+    </script>
+</body>
+</html>
