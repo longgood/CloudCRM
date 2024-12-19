@@ -136,18 +136,3 @@ def get_segment(request):
     except:
         return None
 
-
-
-
-
-
-
-@blueprint.route('/video_feed')
-def video_feed():
-    global video
-    global hands
-    return Response(gen(video,hands),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-@blueprint.route('/video')
-def video():
-    return render_template('home/webstring.html', segment='index')
