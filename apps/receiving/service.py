@@ -1,0 +1,23 @@
+import os
+import pickle
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+
+SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+creds = None
+
+# token.pickle stores the user's access and refresh tokens
+if os.path.exists('token.pickle'):
+    with open('token.pickle', 'rb') as token:
+        creds = pickle.load(token)
+if not creds or not creds.valid:
+    if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+    else:
+        flow = InstalledAppFlow.from_client_secrets_file(
+            '../client_secret_231388179835-hboveeuptbv3ljfn7q1e58ouko96fmpb.apps.googleusercontent.com.json', SCOPES)
+        creds = flow.run_local_server(port=0)
+    with open('token.pickle', 'wb') as token:
+        pickle.dump(creds, token)
+
+service = build('gmail', 'v1', credentials=creds)
