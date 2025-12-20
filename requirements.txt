@@ -33,3 +33,5 @@ SQLAlchemy==1.4.29
 typing_extensions==4.8.0
 Werkzeug==2.0.3
 WTForms==3.0.1
+openai==1.57.4
+opencv-python==4.10.0.84
