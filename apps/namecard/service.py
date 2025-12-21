@@ -88,120 +88,368 @@ class NameCardProcessor:
 
         return cards
 
+    def crop_by_rectangles(self, input_image_path: str, rectangles: List[Dict[str, int]]) -> List[SegmentedCard]:
+        """
+        Crop image based on user-provided rectangles (from interactive selection).
+        
+        Args:
+            input_image_path: path to the original image
+            rectangles: list of dicts with {x, y, w, h} in image coordinates
+            
+        Returns:
+            List of SegmentedCard with cropped images saved to crops_dir
+        """
+        img = cv2.imread(input_image_path)
+        if img is None:
+            raise ValueError(f"Failed to read image: {input_image_path}")
+
+        h, w = img.shape[:2]
+        if self.debug:
+            print(f"[NameCardProcessor] crop_by_rectangles: input={input_image_path} size={w}x{h}")
+            print(f"[NameCardProcessor] rectangles={rectangles}")
+
+        cards: List[SegmentedCard] = []
+        for idx, rect in enumerate(rectangles, start=1):
+            x = max(0, int(rect.get("x", 0)))
+            y = max(0, int(rect.get("y", 0)))
+            rw = int(rect.get("w", 0))
+            rh = int(rect.get("h", 0))
+            
+            # Clamp to image bounds
+            x2 = min(w, x + rw)
+            y2 = min(h, y + rh)
+            
+            if x2 <= x or y2 <= y:
+                if self.debug:
+                    print(f"[NameCardProcessor] Skipping invalid rect {idx}: {rect}")
+                continue
+            
+            # Crop the region
+            crop = img[y:y2, x:x2].copy()
+            
+            if crop.size == 0:
+                if self.debug:
+                    print(f"[NameCardProcessor] Skipping empty crop {idx}")
+                continue
+            
+            ch, cw = crop.shape[:2]
+            
+            # Add small padding (helps OCR)
+            pad = int(max(4, min(20, 0.02 * max(cw, ch))))
+            crop = cv2.copyMakeBorder(crop, pad, pad, pad, pad, cv2.BORDER_REPLICATE)
+            
+            # Rotate to landscape if needed
+            crop_h, crop_w = crop.shape[:2]
+            if crop_h > crop_w * 1.1:
+                crop = cv2.rotate(crop, cv2.ROTATE_90_CLOCKWISE)
+            
+            filename = f"card_{idx:03d}.jpg"
+            out_path = os.path.join(self.crops_dir, filename)
+            cv2.imwrite(out_path, crop)
+            
+            final_h, final_w = crop.shape[:2]
+            cards.append(SegmentedCard(
+                filename=filename,
+                width=final_w,
+                height=final_h,
+                bbox=(x, y, x2 - x, y2 - y)
+            ))
+            
+            if self.debug:
+                print(f"[NameCardProcessor] Saved crop {idx}: {filename} ({final_w}x{final_h})")
+
+        if not cards:
+            # Fallback: save whole image if no valid crops
+            filename = "card_001.jpg"
+            out_path = os.path.join(self.crops_dir, filename)
+            cv2.imwrite(out_path, img)
+            return [SegmentedCard(filename=filename, width=w, height=h, bbox=(0, 0, w, h))]
+
+        return cards
+
     def _detect_candidate_boxes(self, img) -> List[Any]:
         """
         Returns list of 4-point quads (float32) in original image coordinates.
+        Implements multiple detection pipelines and picks the best result.
         """
         h, w = img.shape[:2]
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        gray = cv2.GaussianBlur(gray, (5, 5), 0)
+        gray_blur = cv2.GaussianBlur(gray, (5, 5), 0)
 
-        # Heuristics: business cards can be relatively small in a multi-card photo.
-        min_area = max(0.005 * (w * h), 5_000)
+        # Heuristics for business cards
+        img_area = float(w * h)
+        # For a 10-card grid on A4 scan, each card is ~1/12 of the page
+        min_card_area = max(0.02 * img_area, 30_000)  # ~2% of image
+        max_card_area = 0.25 * img_area  # no single card > 25% of page
+        
+        # For contour filtering (before minAreaRect)
+        min_contour_area = max(0.005 * img_area, 5_000)
 
-        debug_info = {"image": {"w": w, "h": h}, "min_area": min_area, "candidates": []}
+        debug_info = {
+            "image": {"w": w, "h": h},
+            "min_card_area": min_card_area,
+            "max_card_area": max_card_area,
+            "candidates": [],
+            "pipeline_counts": {},
+            "chosen_pipeline": None,
+        }
 
-        def accept_rect(rect, source: str):
+        def accept_rect(rect, source: str, min_ar: float = 1.2, max_ar: float = 4.0):
+            """Check if a minAreaRect is card-shaped and return its box points."""
             (cx, cy), (rw, rh), angle = rect
             if rw <= 0 or rh <= 0:
                 return None
             ar = max(rw, rh) / (min(rw, rh) + 1e-6)
-            # business cards are often ~1.5-2.2 aspect ratio; allow wider bounds.
-            if ar < 1.1 or ar > 5.0:
+            if ar < min_ar or ar > max_ar:
                 return None
-            box = cv2.boxPoints(rect)  # 4 points
-            area = float(rw * rh)
-            debug_info["candidates"].append(
-                {
-                    "source": source,
-                    "center": [float(cx), float(cy)],
-                    "size": [float(rw), float(rh)],
-                    "angle": float(angle),
-                    "aspect_ratio": float(ar),
-                    "area_est": float(area),
-                    "bbox": list(self._quad_bbox(box)),
-                }
-            )
+            area_est = float(rw * rh)
+            if area_est < min_card_area or area_est > max_card_area:
+                return None
+            box = cv2.boxPoints(rect)
+            debug_info["candidates"].append({
+                "source": source,
+                "center": [float(cx), float(cy)],
+                "size": [float(rw), float(rh)],
+                "angle": float(angle),
+                "aspect_ratio": float(ar),
+                "area_est": float(area_est),
+                "bbox": list(self._quad_bbox(box)),
+            })
             return box
 
-        quads: List[Any] = []
+        def dedupe_quads(quads_in: List[Any], threshold: int = 30) -> List[Any]:
+            """Remove near-duplicate quads based on center distance."""
+            if not quads_in:
+                return []
+            quads_in = list(quads_in)
+            # Sort by y then x
+            quads_in.sort(key=lambda q: (self._quad_bbox(q)[1], self._quad_bbox(q)[0]))
+            deduped: List[Any] = []
+            for q in quads_in:
+                x, y, bw, bh = self._quad_bbox(q)
+                cx, cy = x + bw / 2, y + bh / 2
+                too_close = False
+                for oq in deduped:
+                    ox, oy, obw, obh = self._quad_bbox(oq)
+                    ocx, ocy = ox + obw / 2, oy + obh / 2
+                    dist = ((cx - ocx) ** 2 + (cy - ocy) ** 2) ** 0.5
+                    if dist < threshold:
+                        too_close = True
+                        break
+                if not too_close:
+                    deduped.append(q)
+            return deduped
 
-        # Pipeline A: Edge detection + morphology to connect card borders
-        edges = cv2.Canny(gray, 40, 140)
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
-        edges = cv2.dilate(edges, kernel, iterations=2)
-        edges = cv2.erode(edges, kernel, iterations=1)
+        quads_edges: List[Any] = []
+        quads_thresh: List[Any] = []
+        quads_scan: List[Any] = []
+
+        # ========== Pipeline A: Canny edge detection ==========
+        edges = cv2.Canny(gray_blur, 30, 100)
+        kernel_edge = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+        edges = cv2.dilate(edges, kernel_edge, iterations=2)
+        edges = cv2.erode(edges, kernel_edge, iterations=1)
         if self.debug:
             self._write_debug_image("01_edges.jpg", edges)
 
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours_edge, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if self.debug:
-            print(f"[NameCardProcessor] edge_contours={len(contours)}")
+            print(f"[NameCardProcessor] Pipeline A (edges): {len(contours_edge)} contours")
 
-        for cnt in contours:
-            area = cv2.contourArea(cnt)
-            if area < min_area:
+        for cnt in contours_edge:
+            if cv2.contourArea(cnt) < min_contour_area:
                 continue
             rect = cv2.minAreaRect(cnt)
             box = accept_rect(rect, "edges")
             if box is not None:
-                quads.append(box)
+                quads_edges.append(box)
 
-        # Pipeline B (fallback/augment): Adaptive threshold + morphology (better for low-contrast edges)
-        # Cards are mostly light rectangles on a darker background: use inverse threshold.
-        thr = cv2.adaptiveThreshold(
-            gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 31, 7
-        )
+        # ========== Pipeline B: Adaptive threshold ==========
+        thr = cv2.adaptiveThreshold(gray_blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                     cv2.THRESH_BINARY_INV, 31, 5)
+        k_close_b = cv2.getStructuringElement(cv2.MORPH_RECT, (15, 15))
+        morph_b = cv2.morphologyEx(thr, cv2.MORPH_CLOSE, k_close_b, iterations=2)
+        morph_b = cv2.morphologyEx(morph_b, cv2.MORPH_OPEN, 
+                                    cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)), iterations=1)
         if self.debug:
             self._write_debug_image("02_thresh.jpg", thr)
+            self._write_debug_image("03_morph.jpg", morph_b)
 
-        # Close small gaps; then open to remove specks
-        k_close = cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11))
-        k_open = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-        morph = cv2.morphologyEx(thr, cv2.MORPH_CLOSE, k_close, iterations=2)
-        morph = cv2.morphologyEx(morph, cv2.MORPH_OPEN, k_open, iterations=1)
+        contours_thresh, _ = cv2.findContours(morph_b, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if self.debug:
-            self._write_debug_image("03_morph.jpg", morph)
+            print(f"[NameCardProcessor] Pipeline B (thresh): {len(contours_thresh)} contours")
 
-        contours2, _ = cv2.findContours(morph, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if self.debug:
-            print(f"[NameCardProcessor] thresh_contours={len(contours2)}")
-
-        for cnt in contours2:
-            area = cv2.contourArea(cnt)
-            if area < min_area:
+        for cnt in contours_thresh:
+            if cv2.contourArea(cnt) < min_contour_area:
                 continue
             rect = cv2.minAreaRect(cnt)
             box = accept_rect(rect, "thresh")
             if box is not None:
-                quads.append(box)
+                quads_thresh.append(box)
 
-        # Sort quads top-to-bottom then left-to-right
-        def sort_key(q):
-            x, y, bw, bh = self._quad_bbox(q)
-            return (y, x)
+        # ========== Pipeline C: Scan/Grid detection (for white background scans) ==========
+        # This is the KEY pipeline for your 10-card scanned image.
+        # Strategy:
+        # 1. Detect all non-white pixels (text, logos, borders)
+        # 2. Use VERY large morphology to merge all content within each card
+        # 3. Find connected components (each should be one card)
 
-        quads.sort(key=sort_key)
+        # Step 1: Create mask of non-white pixels (with some tolerance for near-white)
+        # Use multiple thresholds and combine for robustness
+        mask_tight = (gray < 240).astype(np.uint8) * 255  # very non-white
+        mask_loose = (gray < 250).astype(np.uint8) * 255  # slightly non-white
+        
+        # Use Otsu's threshold as well for automatic level detection
+        _, otsu_mask = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        
+        # Combine masks
+        combined_mask = cv2.bitwise_or(mask_tight, otsu_mask)
+        
+        if self.debug:
+            self._write_debug_image("05_scan_mask_tight.jpg", mask_tight)
+            self._write_debug_image("05_scan_mask_otsu.jpg", otsu_mask)
+            self._write_debug_image("05_scan_mask_combined.jpg", combined_mask)
 
-        # Remove near-duplicates (same location/size)
-        deduped: List[Any] = []
-        for q in quads:
-            x, y, bw, bh = self._quad_bbox(q)
-            too_close = False
-            for oq in deduped:
-                ox, oy, obw, obh = self._quad_bbox(oq)
-                if abs(x - ox) < 20 and abs(y - oy) < 20 and abs(bw - obw) < 40 and abs(bh - obh) < 40:
-                    too_close = True
-                    break
-            if not too_close:
-                deduped.append(q)
+        # Step 2: HUGE morphology close to merge all text/logos within a card
+        # For a typical A4 scan at 150-300 DPI, cards are ~400-800px wide
+        # We need a kernel that can bridge gaps of 50-150px between text lines
+        
+        # Adaptive kernel size based on image dimensions
+        # For 1200px height, kernel ~ 60-80px; for 2400px, kernel ~ 120-160px
+        base_kernel_size = int(min(w, h) / 15)  # ~6-7% of smaller dimension
+        base_kernel_size = max(40, min(150, base_kernel_size))  # clamp to [40, 150]
+        if base_kernel_size % 2 == 0:
+            base_kernel_size += 1  # must be odd
+        
+        if self.debug:
+            print(f"[NameCardProcessor] Pipeline C: base_kernel_size={base_kernel_size}")
+
+        # Apply morphology in stages for better merging
+        k_dilate1 = cv2.getStructuringElement(cv2.MORPH_RECT, (15, 15))
+        k_close1 = cv2.getStructuringElement(cv2.MORPH_RECT, (base_kernel_size, base_kernel_size))
+        k_close2 = cv2.getStructuringElement(cv2.MORPH_RECT, (base_kernel_size // 2, base_kernel_size // 2))
+        
+        # First dilate to connect nearby text
+        scan_morph = cv2.dilate(combined_mask, k_dilate1, iterations=2)
+        # Then close to merge everything within a card
+        scan_morph = cv2.morphologyEx(scan_morph, cv2.MORPH_CLOSE, k_close1, iterations=2)
+        # Additional close pass
+        scan_morph = cv2.morphologyEx(scan_morph, cv2.MORPH_CLOSE, k_close2, iterations=2)
+        # Clean up small noise
+        scan_morph = cv2.morphologyEx(scan_morph, cv2.MORPH_OPEN, 
+                                       cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10)), iterations=1)
+        
+        if self.debug:
+            self._write_debug_image("06_scan_morph.jpg", scan_morph)
+
+        # Step 3: Find contours (each should be one card now)
+        contours_scan, _ = cv2.findContours(scan_morph, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if self.debug:
+            print(f"[NameCardProcessor] Pipeline C (scan): {len(contours_scan)} contours after morph")
+
+        for cnt in contours_scan:
+            rect = cv2.minAreaRect(cnt)
+            # More lenient aspect ratio for scan pipeline (cards may be slightly skewed)
+            box = accept_rect(rect, "scan", min_ar=1.1, max_ar=5.0)
+            if box is not None:
+                quads_scan.append(box)
+
+        # ========== Pipeline D: Alternative - edge-based rectangle detection ==========
+        # Sometimes morphology doesn't work well; try finding rectangles via contour approximation
+        quads_contour: List[Any] = []
+        
+        # Use bilateral filter to smooth while preserving edges
+        bilateral = cv2.bilateralFilter(gray, 9, 75, 75)
+        edges_bilateral = cv2.Canny(bilateral, 20, 80)
+        edges_bilateral = cv2.dilate(edges_bilateral, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=2)
+        
+        if self.debug:
+            self._write_debug_image("07_bilateral_edges.jpg", edges_bilateral)
+        
+        contours_bilateral, _ = cv2.findContours(edges_bilateral, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        for cnt in contours_bilateral:
+            area = cv2.contourArea(cnt)
+            if area < min_contour_area:
+                continue
+            # Approximate contour to polygon
+            peri = cv2.arcLength(cnt, True)
+            approx = cv2.approxPolyDP(cnt, 0.02 * peri, True)
+            # If it's roughly rectangular (4-6 vertices)
+            if 4 <= len(approx) <= 8:
+                rect = cv2.minAreaRect(cnt)
+                box = accept_rect(rect, "contour", min_ar=1.1, max_ar=5.0)
+                if box is not None:
+                    quads_contour.append(box)
+        
+        if self.debug:
+            print(f"[NameCardProcessor] Pipeline D (contour): {len(quads_contour)} candidates")
+
+        # ========== Dedup and choose best pipeline ==========
+        quads_edges_d = dedupe_quads(quads_edges, threshold=50)
+        quads_thresh_d = dedupe_quads(quads_thresh, threshold=50)
+        quads_scan_d = dedupe_quads(quads_scan, threshold=50)
+        quads_contour_d = dedupe_quads(quads_contour, threshold=50)
+
+        debug_info["pipeline_counts"] = {
+            "edges": len(quads_edges_d),
+            "thresh": len(quads_thresh_d),
+            "scan": len(quads_scan_d),
+            "contour": len(quads_contour_d),
+        }
 
         if self.debug:
-            debug_info["deduped"] = len(deduped)
+            print(f"[NameCardProcessor] Pipeline counts: edges={len(quads_edges_d)}, thresh={len(quads_thresh_d)}, scan={len(quads_scan_d)}, contour={len(quads_contour_d)}")
+
+        # Choose best pipeline based on number of detections
+        # For multi-card scans, prefer the pipeline that finds the most cards (within reason)
+        pipeline_results = [
+            ("scan", quads_scan_d),
+            ("contour", quads_contour_d),
+            ("thresh", quads_thresh_d),
+            ("edges", quads_edges_d),
+        ]
+        
+        # Sort by count (descending), prefer pipelines finding 3-20 cards
+        def score_pipeline(name_quads):
+            name, quads = name_quads
+            count = len(quads)
+            if 3 <= count <= 20:
+                return (1000 + count, count)  # prefer reasonable counts
+            elif count > 0:
+                return (count, count)
+            return (0, 0)
+        
+        pipeline_results.sort(key=score_pipeline, reverse=True)
+        best_name, best_quads = pipeline_results[0]
+        
+        # If best has reasonable count, use it; otherwise combine all
+        if len(best_quads) >= 3:
+            chosen = best_quads
+            debug_info["chosen_pipeline"] = best_name
+        else:
+            # Combine all and dedupe
+            all_quads = quads_edges_d + quads_thresh_d + quads_scan_d + quads_contour_d
+            chosen = dedupe_quads(all_quads, threshold=50)
+            debug_info["chosen_pipeline"] = "combined"
+
+        if self.debug:
+            debug_info["final_count"] = len(chosen)
             with open(os.path.join(self.debug_dir, "boxes.json"), "w", encoding="utf-8") as f:
                 json.dump(debug_info, f, ensure_ascii=False, indent=2)
+            
+            # Draw final overlay
+            overlay = img.copy()
+            for idx, q in enumerate(chosen, 1):
+                pts = q.reshape((-1, 1, 2)).astype(np.int32)
+                cv2.polylines(overlay, [pts], True, (0, 255, 0), 4)
+                x, y, _, _ = self._quad_bbox(q)
+                cv2.putText(overlay, str(idx), (int(x) + 10, int(y) + 40),
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
+            self._write_debug_image("04_boxes_overlay.jpg", overlay)
+            print(f"[NameCardProcessor] Chosen: {debug_info['chosen_pipeline']} with {len(chosen)} boxes")
 
-        return deduped
+        return chosen
 
     def _order_quad(self, pts):
         # pts: 4x2
@@ -234,6 +482,10 @@ class NameCardProcessor:
         dst = np.array([[0, 0], [maxW - 1, 0], [maxW - 1, maxH - 1], [0, maxH - 1]], dtype="float32")
         M = cv2.getPerspectiveTransform(np.array(pts, dtype="float32"), dst)
         warped = cv2.warpPerspective(img, M, (maxW, maxH))
+
+        # Add small padding to avoid border clipping (helps OCR too).
+        pad = int(max(6, min(40, 0.02 * max(maxW, maxH))))
+        warped = cv2.copyMakeBorder(warped, pad, pad, pad, pad, cv2.BORDER_REPLICATE)
 
         # Rotate to landscape if needed
         wh = warped.shape[:2]

@@ -6,14 +6,102 @@
   {% include 'includes/navigation.html' %}
 {% endblock navigator %}
 
+{% block stylesheets %}
+<style>
+  #canvasContainer {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  #previewImage {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+  #selectionCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: crosshair;
+  }
+  .selection-box {
+    position: absolute;
+    border: 2px solid #28a745;
+    background: rgba(40, 167, 69, 0.15);
+    pointer-events: none;
+  }
+  .selection-box .box-label {
+    position: absolute;
+    top: -22px;
+    left: 0;
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 3px;
+  }
+  .selection-box .box-delete {
+    position: absolute;
+    top: -22px;
+    right: 0;
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 2px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 3px;
+    pointer-events: auto;
+  }
+  .selection-box .box-delete:hover {
+    background: #c82333;
+  }
+  #modeToggle {
+    margin-bottom: 15px;
+  }
+  .mode-btn.active {
+    background-color: #1f2937;
+    color: white;
+  }
+  #selectionList {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .selection-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e9ecef;
+  }
+  .selection-item:last-child {
+    border-bottom: none;
+  }
+</style>
+{% endblock stylesheets %}
+
 {% block content %}
 <div class="py-4">
   <div class="d-flex justify-content-between w-100 flex-wrap">
     <div class="mb-3 mb-lg-0">
-      <h1 class="h4">名片 OCR（多張自動分割）</h1>
-      <p class="mb-0 text-muted">拖曳圖片或選擇檔案 → 自動切割每張名片 → OpenAI Vision 擷取欄位 → 確認後寫入客戶資料庫</p>
+      <h1 class="h4">名片 OCR</h1>
+      <p class="mb-0 text-muted">拖曳圖片或選擇檔案 → 自動或手動選取名片區域 → OCR 擷取欄位 → 確認後寫入客戶資料庫</p>
     </div>
   </div>
+</div>
+
+<!-- Mode Toggle -->
+<div id="modeToggle" class="btn-group" role="group">
+  <button type="button" class="btn btn-outline-secondary mode-btn active" data-mode="auto">
+    <svg class="icon icon-xs me-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg>
+    自動偵測
+  </button>
+  <button type="button" class="btn btn-outline-secondary mode-btn" data-mode="manual">
+    <svg class="icon icon-xs me-1" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg>
+    手動框選
+  </button>
 </div>
 
 <div class="card border-0 shadow mb-4">
@@ -24,18 +112,54 @@
       <input id="fileInput" type="file" accept="image/*" class="form-control" />
     </div>
 
+    <!-- Image Preview + Canvas for Manual Selection -->
+    <div id="previewArea" class="mt-4" style="display: none;">
+      <div class="row">
+        <div class="col-12 col-lg-8">
+          <div class="mb-2 d-flex justify-content-between align-items-center">
+            <span class="fw-bold">預覽 (點擊並拖曳框選名片區域)</span>
+            <button id="clearSelectionsBtn" class="btn btn-outline-danger btn-sm">清除全部選取</button>
+          </div>
+          <div id="canvasContainer">
+            <img id="previewImage" src="" alt="preview" />
+            <canvas id="selectionCanvas"></canvas>
+            <div id="selectionBoxes"></div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-4 mt-3 mt-lg-0">
+          <div class="fw-bold mb-2">已選取區域 (<span id="selectionCount">0</span>)</div>
+          <div id="selectionList" class="border rounded bg-light"></div>
+          <div class="mt-2 text-muted small">
+            提示：在圖片上拖曳矩形框選每張名片
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="mt-3">
-      <button id="analyzeBtn" class="btn btn-primary" disabled>Analyze</button>
+      <button id="analyzeBtn" class="btn btn-primary" disabled>
+        <span id="analyzeBtnText">Analyze</span>
+      </button>
       <span id="status" class="ms-3 text-muted"></span>
     </div>
   </div>
 </div>
 
 <div id="results"></div>
+
+<!-- Debug output (visible on page) -->
+<div class="card border-0 shadow mt-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="fw-bold">Debug Log</span>
+    <button id="clearDebugBtn" class="btn btn-outline-secondary btn-sm">Clear</button>
+  </div>
+  <div class="card-body">
+    <pre id="debugOutput" style="max-height: 200px; overflow-y: auto; font-size: 12px; background: #f8f9fa; padding: 10px; border-radius: 4px; margin: 0;"></pre>
+  </div>
+</div>
 {% endblock content %}
 
 {% block javascripts %}
-<script src="/static/assets/js/namecard_ocr.js"></script>
+{# cache-bust to ensure latest JS loads #}
+<script src="/static/assets/js/namecard_ocr.js?v=debug-20250221a"></script>
 {% endblock javascripts %}
-
-

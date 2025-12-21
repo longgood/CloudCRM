@@ -88,6 +88,78 @@ def namecard_ocr_image(job_id: str, filename: str):
     return send_file(path, mimetype="image/jpeg")
 
 
+@blueprint.route("/namecard_ocr/original/<job_id>/<filename>", methods=["GET"])
+@login_required
+def namecard_ocr_original(job_id: str, filename: str):
+    """Serve the original uploaded image (for preview in manual mode)."""
+    root = _uploads_root()
+    safe_job = secure_filename(job_id)
+    safe_name = secure_filename(filename)
+    path = _safe_join_under_root(root, "namecard_ocr", safe_job, safe_name)
+    if not os.path.exists(path):
+        return "Image not found", 404
+    # Detect mimetype from extension
+    ext = os.path.splitext(filename)[1].lower()
+    mimetype = "image/jpeg"
+    if ext == ".png":
+        mimetype = "image/png"
+    elif ext in (".gif",):
+        mimetype = "image/gif"
+    return send_file(path, mimetype=mimetype)
+
+
+@blueprint.route("/namecard_ocr/analyze_manual", methods=["POST"])
+@login_required
+def namecard_ocr_analyze_manual():
+    """Crop based on user-drawn rectangles, then OCR each crop."""
+    import json as json_mod
+
+    if "file" not in request.files:
+        return jsonify({"ok": False, "error": "missing file"}), 400
+
+    f = request.files["file"]
+    if not f or not f.filename:
+        return jsonify({"ok": False, "error": "empty filename"}), 400
+
+    selections_raw = request.form.get("selections", "[]")
+    try:
+        selections = json_mod.loads(selections_raw)
+    except Exception:
+        return jsonify({"ok": False, "error": "invalid selections JSON"}), 400
+
+    if not selections or not isinstance(selections, list):
+        return jsonify({"ok": False, "error": "no selections provided"}), 400
+
+    job_id = new_job_id()
+    job_dir = _job_dir(job_id)
+    os.makedirs(job_dir, exist_ok=True)
+
+    filename = secure_filename(f.filename)
+    original_path = os.path.join(job_dir, f"original_{filename}")
+    f.save(original_path)
+
+    # 1) Crop based on user selections
+    processor = NameCardProcessor(job_dir)
+    cards = processor.crop_by_rectangles(original_path, selections)
+
+    # 2) OCR each crop with OpenAI Vision
+    extractor = OpenAIBusinessCardExtractor()
+    results = []
+    for c in cards:
+        crop_path = os.path.join(job_dir, "crops", c.filename)
+        fields = extractor.extract_fields(crop_path)
+        results.append(
+            {
+                "filename": c.filename,
+                "image_url": f"/namecard_ocr/image/{job_id}/{c.filename}",
+                "bbox": {"x": c.bbox[0], "y": c.bbox[1], "w": c.bbox[2], "h": c.bbox[3]},
+                "fields": fields,
+            }
+        )
+
+    return jsonify({"ok": True, "job_id": job_id, "cards": results})
+
+
 @blueprint.route("/namecard_ocr/confirm", methods=["POST"])
 @login_required
 def namecard_ocr_confirm():
