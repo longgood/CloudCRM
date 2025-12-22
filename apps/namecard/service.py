@@ -526,11 +526,11 @@ class NameCardProcessor:
 
 class OpenAIBusinessCardExtractor:
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY_CRM")
         self.model = model or os.getenv("OPENAI_VISION_MODEL", "gpt-4o-mini")
 
         if not self.api_key:
-            raise ValueError("OPENAI_API_KEY is not set")
+            raise ValueError("OPENAI_API_KEY_CRM is not set")
 
         # Lazy import so app can start without OpenAI in some contexts.
         from openai import OpenAI  # type: ignore
@@ -581,20 +581,80 @@ class OpenAIBusinessCardExtractor:
                     ],
                 }
             ],
-            response_format={
-                "type": "json_schema",
-                "json_schema": {"name": "business_card", "schema": schema, "strict": True},
+            text={
+                "format": {
+                    "type": "json_schema",
+                    # openai==1.75.0 Responses API requires `text.format.name`
+                    "name": "business_card",
+                    "schema": schema,
+                    "strict": True,
+                }
             },
         )
 
-        # openai Responses API: output_text is convenient but we want the JSON object.
-        text = getattr(resp, "output_text", None)
+        # Responses API: `output_text` is convenient, but even with json_schema the model may
+        # occasionally wrap JSON with extra text. We'll parse robustly.
+        def _coerce_mapping(obj):
+            # Support both SDK objects (attrs) and dicts.
+            if obj is None:
+                return None
+            if isinstance(obj, dict):
+                return obj
+            return None
+
+        def _iter_output_text_parts(response_obj):
+            out = getattr(response_obj, "output", None)
+            if not out:
+                return
+            for item in out:
+                content = getattr(item, "content", None)
+                if content is None:
+                    as_dict = _coerce_mapping(item)
+                    content = as_dict.get("content") if as_dict else None
+                if not content:
+                    continue
+                for part in content:
+                    ptype = getattr(part, "type", None)
+                    if ptype is None:
+                        as_dict = _coerce_mapping(part)
+                        ptype = as_dict.get("type") if as_dict else None
+                    if ptype not in ("output_text", "text"):
+                        continue
+                    ptext = getattr(part, "text", None)
+                    if ptext is None:
+                        as_dict = _coerce_mapping(part)
+                        ptext = as_dict.get("text") if as_dict else None
+                    if ptext:
+                        yield str(ptext)
+
+        text = (getattr(resp, "output_text", None) or "").strip()
         if not text:
-            # best-effort fallback: stringify whole response
+            parts = list(_iter_output_text_parts(resp))
+            text = "\n".join(parts).strip()
+        if not text:
+            # best-effort fallback: stringify whole response for debugging/visibility
             text = str(resp)
 
+        def _best_effort_json_loads(s: str):
+            # 1) Direct JSON
+            try:
+                return json.loads(s)
+            except Exception:
+                pass
+            # 2) Find first JSON object/array within the string
+            dec = json.JSONDecoder()
+            for i, ch in enumerate(s):
+                if ch not in "{[":
+                    continue
+                try:
+                    obj, _end = dec.raw_decode(s[i:])
+                    return obj
+                except Exception:
+                    continue
+            raise ValueError("No JSON object found in response text")
+
         try:
-            data = json.loads(text)
+            data = _best_effort_json_loads(text)
         except Exception:
             data = {"raw_text": text}
 
