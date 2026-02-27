@@ -2,6 +2,16 @@
 """
 """
 
+# Fix UnicodeDecodeError in socket.getfqdn() on Windows with non-ASCII hostnames
+import socket
+_original_getfqdn = socket.getfqdn
+def _safe_getfqdn(name=''):
+    try:
+        return _original_getfqdn(name)
+    except UnicodeDecodeError:
+        return 'localhost'
+socket.getfqdn = _safe_getfqdn
+
 from flask_migrate import Migrate
 from sys import exit
 from decouple import config
