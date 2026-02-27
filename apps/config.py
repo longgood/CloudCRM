@@ -25,6 +25,26 @@ class Config(object):
     UPLOAD_FOLDER = 'D:/testdata'
     static_folder="./"
     template_folder="./"
+
+    # Google OAuth (for Gmail API)
+    GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')
+    GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET', default='')
+    GOOGLE_REDIRECT_URI = config('GOOGLE_REDIRECT_URI', default='http://localhost/gmail/callback')
+
+    # Fernet encryption key for OAuth tokens
+    FERNET_KEY = config('FERNET_KEY', default='')
+
+    # OpenAI API key (for business card extraction + draft generation)
+    OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
+
+    # Tesseract OCR path
+    TESSERACT_CMD = config('TESSERACT_CMD', default='tesseract')
+
+    # Upload directory for business card images
+    UPLOAD_FOLDER_NAMECARD = config('UPLOAD_FOLDER_NAMECARD', default=os.path.join(basedir, '..', 'data', 'namecard'))
+
+    # Company introduction template for draft generation
+    COMPANY_INTRO_TEMPLATE = config('COMPANY_INTRO_TEMPLATE', default='')
     
 
 class ProductionConfig(Config):

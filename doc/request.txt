@@ -1,0 +1,96 @@
+你現在是我的資深全端工程師，請在「我現有的 CRM 系統」中新增兩個模組：Gmail 讀取/篩選、名片自動化處理與寄信。
+請先讀取整個 repo，輸出你理解的架構（後端/前端/DB/認證/部署），然後依照下列規格逐步實作，並且每一步都要能跑起來。
+
+=== 專案資訊（如未知請你先自行從 repo 判斷，判斷不到再建立合理預設並寫在 README）===
+- 後端技術棧：例如 Flask
+- 前端技術棧：volt
+- DB：SQLite}
+- 既有使用者登入：{例如 email+password / Google OAuth / 無}
+- 部署：{例如 Docker / systemd / k8s / bare metal}
+
+========================================================
+A) Gmail 讀取與對話等級篩選
+========================================================
+需求：
+1. 透過 Google OAuth 取得授權後，系統能「讀取我的 Gmail」，至少能掃描：
+   - 我寄信給誰（From=me → To/CC）
+   - 誰寄信給我（To=me → From）
+   - 需能抓每封信的：threadId / messageId / internalDate / from / to / cc / subject / snippet / labels(或分類)
+   - 先不做附件下載（可留 TODO）
+2. 必須排除社交媒體和廣告信件：
+   - 優先使用 Gmail 的分類標籤：CATEGORY_PROMOTIONS / CATEGORY_SOCIAL
+   - 只保留主要信件：CATEGORY_PERSONAL (若拿不到就用 INBOX + 排除 PROMOTIONS/SOCIAL 作 fallback)
+3. 提供「篩選等級」：
+   - Level 0: 只要曾經互寄（任一方向有信）
+   - Level 1: 來回件（雙向至少各 1 封）：對方寄給我且我回過 或 我寄給他且他回過（以 thread 或 email address 兩種算法都支援）
+   - Level 2: 穩定互動（雙向各 >=2 封，且最近 900 天內有互動）
+   - Level 3: 穩定互動（雙向各 >=3 封，且最近 180 天內有互動）
+4. 需有排程同步能力（手動按鈕 + server cron/worker 任一種），避免每次進頁都打 Gmail API。
+5. 資安：
+   - access token / refresh token 必須加密存放（用環境變數提供加密 key）
+   - 最小權限：優先用 Gmail readonly scope；寄信部分另用 send scope（可分開授權或一次授權）
+6. UI：
+   - CRM 增加「Email Contacts」頁：列出聯絡人 email、互動等級、最後往來日期、主旨摘要（最近 1~3 封）
+   - 可以用 filter 下拉：All / Level0 / Level1 / Level2；並可搜尋 email 或名字（如果 DB 有對應）
+7. DB Schema（若 repo 已有 contacts 表就擴充）：
+   - gmail_accounts: user_id, google_sub, email, encrypted_refresh_token, created_at, updated_at
+   - email_messages: id, user_id, message_id, thread_id, from_email, to_emails(json), cc_emails(json), subject, snippet, internal_date, labels(json), direction(inbound/outbound)
+   - email_contacts: id, user_id, contact_email, level, last_interaction_at, inbound_count, outbound_count, last_subject
+   - indexes: (user_id, contact_email), (user_id, internal_date)
+
+Gmail 同步邏輯建議：
+- 先用 list messages + query:
+  - in:inbox newer_than:365d -category:promotions -category:social
+  - 或使用 labelIds: ["CATEGORY_PERSONAL"] 若可行
+- 再批次 get message(metadata) 拿 headers
+- 解析 From/To/Cc，統一規格化 email（小寫、去 display name）
+- 寫入 email_messages，並聚合更新 email_contacts（計算 level）
+- 做去重：message_id 唯一
+
+========================================================
+B) 名片上傳 → 萃取 → 草稿信 → 確認寄出
+========================================================
+需求：
+1. UI 新增「Business Card」頁：
+   - 上傳名片照片（jpg/png）
+   - 顯示 OCR/萃取結果（可編輯）
+   - 顯示「Prompt 欄位」：我可以輸入一些提示（例如我想怎麼跟對方打招呼、我公司賣什麼、這次在哪裡認識）
+   - 產生草稿信（subject + body）
+   - 按下確認後，透過我的 Gmail 寄出（寄出後在 CRM 記錄這次寄送）
+2. 後端流程：
+   - upload → 存檔（S3 或 local /data/uploads，依 repo 既有習慣）
+   - OCR：先用你能取得的方案（若 repo 已有 OpenAI/Google Vision/Tesseract 任一就接；沒有就先用 Tesseract 作 default，並抽象成介面方便替換）
+   - 資訊萃取：用 LLM 將 OCR 文本轉成結構化 JSON：
+     {name, title, company, email, phone, address, website, notes}
+   - 草稿信生成：LLM 輸入（萃取 JSON + 我的 Prompt + 我方公司固定介紹模板）→ 產出 subject/body 接上openAI
+3. Email 寄送：
+   - 使用 Gmail API send（RFC 2822 raw base64）
+   - 寄給名片上的 email；若沒有 email 則 UI 阻擋寄送並提示補上
+4. DB Schema：
+   - business_cards: id, user_id, image_path, ocr_text, extracted_json, created_at
+   - outbound_drafts: id, user_id, business_card_id, to_email, subject, body, status(draft/sent), gmail_message_id, created_at, sent_at
+
+========================================================
+C) 交付方式與步驟
+========================================================
+請你按這個順序交付，每一步都要可跑、可測：
+1) 在 README 新增「Google OAuth 設定教學」(client_id/secret、redirect url、環境變數清單)
+2) 新增 Gmail OAuth 登入/授權流程（能把 refresh token 安全存起來）
+3) 實作 Gmail 同步（先做 30 天內；再加參數可選 365 天）
+4) 實作 email_contacts 聚合與 Level0/1/2 算法（同時提供以 thread 和以 address 聚合的選項）
+5) 前端 Email Contacts 頁 + filter/search
+6) 名片上傳頁：上傳、顯示 OCR、顯示萃取欄位可編輯
+7) 草稿信產生（可編輯）
+8) 確認寄出（Gmail send）+ 寄送紀錄
+9) 測試：
+   - 單元測試：email header 解析、level 計算
+   - 整合測試：mock Gmail API（若可能）
+10) 產出變更清單（哪些檔案新增/修改、如何啟動）
+
+工程要求：
+- 不要把任何 secret 寫進 repo
+- 每個 API route 都要做權限檢查（只能存取自己的 gmail_account、cards、drafts）
+- 任何外部 API 失敗都要有清楚的錯誤訊息回傳前端
+- 所有新功能加上最基本的 logging（方便我日後查錯）
+
+開始工作：先掃 repo，列出你要動的檔案與新增的檔案，然後再開始實作。

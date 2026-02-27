@@ -1,0 +1,127 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Compose Email {% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+      <li class="breadcrumb-item"><a href="/index"><svg class="icon icon-xxs" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg></a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('namecard_blueprint.cards') }}">Business Cards</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Compose Email</li>
+    </ol>
+  </nav>
+  <div class="mb-3">
+    <h1 class="h4">Compose Email</h1>
+    <p class="mb-0">Review and edit the draft before sending.</p>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row">
+  <!-- Email Compose -->
+  <div class="col-12 col-lg-8">
+    <div class="card border-0 shadow mb-4">
+      <div class="card-header">
+        <h2 class="fs-5 fw-bold mb-0">Email Draft</h2>
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('namecard_blueprint.send') }}" id="sendForm">
+          <input type="hidden" name="card_id" value="{{ card.id }}">
+          <input type="hidden" name="user_prompt" value="{{ user_prompt }}">
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">To</label>
+            <input type="email" name="to_email" class="form-control" value="{{ to_email }}" required>
+            {% if not to_email %}
+              <div class="text-danger mt-1">No email found on business card. Please enter the recipient's email.</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Subject</label>
+            <input type="text" name="subject" class="form-control" value="{{ subject }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Body</label>
+            <textarea name="body" class="form-control" rows="12" required>{{ body }}</textarea>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success" id="sendBtn">
+              <svg class="icon icon-xs me-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
+              Send Email
+            </button>
+            <a href="{{ url_for('namecard_blueprint.card_detail', card_id=card.id) }}" class="btn btn-outline-secondary">Back to Card</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recipient Info Sidebar -->
+  <div class="col-12 col-lg-4">
+    <div class="card border-0 shadow mb-4">
+      <div class="card-header">
+        <h2 class="fs-5 fw-bold mb-0">Recipient Info</h2>
+      </div>
+      <div class="card-body">
+        <table class="table table-sm">
+          <tbody>
+            {% if extracted.get('name') %}<tr><td class="fw-bold">Name</td><td>{{ extracted.name }}</td></tr>{% endif %}
+            {% if extracted.get('title') %}<tr><td class="fw-bold">Title</td><td>{{ extracted.title }}</td></tr>{% endif %}
+            {% if extracted.get('company') %}<tr><td class="fw-bold">Company</td><td>{{ extracted.company }}</td></tr>{% endif %}
+            {% if extracted.get('email') %}<tr><td class="fw-bold">Email</td><td>{{ extracted.email }}</td></tr>{% endif %}
+            {% if extracted.get('phone') %}<tr><td class="fw-bold">Phone</td><td>{{ extracted.phone }}</td></tr>{% endif %}
+            {% if extracted.get('website') %}<tr><td class="fw-bold">Website</td><td>{{ extracted.website }}</td></tr>{% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% if user_prompt %}
+    <div class="card border-0 shadow mb-4">
+      <div class="card-header">
+        <h2 class="fs-5 fw-bold mb-0">Your Prompt</h2>
+      </div>
+      <div class="card-body">
+        <p class="mb-0">{{ user_prompt }}</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+document.getElementById('sendForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var form = this;
+  Swal.fire({
+    title: 'Send Email?',
+    text: 'This will send the email via your connected Gmail account.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Send',
+    cancelButtonText: 'Cancel'
+  }).then(function(result) {
+    if (result.isConfirmed) {
+      form.submit();
+    }
+  });
+});
+</script>
+{% endblock javascripts %}

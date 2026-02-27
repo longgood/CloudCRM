@@ -1,0 +1,122 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Gmail Settings {% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+      <li class="breadcrumb-item"><a href="/index"><svg class="icon icon-xxs" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg></a></li>
+      <li class="breadcrumb-item"><a href="#">Email Contacts</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Gmail Settings</li>
+    </ol>
+  </nav>
+  <div class="d-flex justify-content-between w-100 flex-wrap">
+    <div class="mb-3 mb-lg-0">
+      <h1 class="h4">Gmail Settings</h1>
+      <p class="mb-0">Connect your Gmail account to sync email contacts.</p>
+    </div>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row">
+  <div class="col-12 col-xl-8">
+    <div class="card border-0 shadow mb-4">
+      <div class="card-header">
+        <h2 class="fs-5 fw-bold mb-0">Gmail Connection</h2>
+      </div>
+      <div class="card-body">
+        {% if gmail_account %}
+          <div class="d-flex align-items-center mb-4">
+            <div class="icon-shape icon-shape-success rounded me-3">
+              <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+            </div>
+            <div>
+              <h3 class="fs-6 fw-bold mb-0">Connected</h3>
+              <p class="mb-0 text-muted">{{ gmail_account.google_email }}</p>
+            </div>
+          </div>
+
+          <table class="table table-centered mb-4">
+            <tbody>
+              <tr>
+                <td class="fw-bold">Email</td>
+                <td>{{ gmail_account.google_email }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold">Connected At</td>
+                <td>{{ gmail_account.created_at.strftime('%Y-%m-%d %H:%M') if gmail_account.created_at else 'N/A' }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold">Last Sync</td>
+                <td>{{ gmail_account.last_sync_at.strftime('%Y-%m-%d %H:%M') if gmail_account.last_sync_at else 'Never' }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="d-flex gap-2">
+            <form method="POST" action="{{ url_for('gmail_blueprint.sync') }}" class="d-inline">
+              <div class="input-group">
+                <select name="days" class="form-select" style="max-width: 160px;">
+                  <option value="30">Last 30 days</option>
+                  <option value="90">Last 90 days</option>
+                  <option value="365" selected>Last 365 days</option>
+                </select>
+                <button type="submit" class="btn btn-primary">
+                  <svg class="icon icon-xs me-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path></svg>
+                  Sync Now
+                </button>
+              </div>
+            </form>
+
+            <form method="POST" action="{{ url_for('gmail_blueprint.disconnect') }}" class="d-inline">
+              <button type="submit" class="btn btn-outline-danger"
+                      onclick="return confirm('Disconnect Gmail and delete all synced data?')">
+                Disconnect
+              </button>
+            </form>
+          </div>
+
+        {% else %}
+          <div class="text-center py-5">
+            <svg class="icon icon-lg mb-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
+            <h3 class="fs-5 fw-bold">No Gmail Account Connected</h3>
+            <p class="text-muted mb-4">Connect your Gmail to sync email contacts and interaction levels.</p>
+            <a href="{{ url_for('gmail_blueprint.authorize') }}" class="btn btn-primary btn-lg">
+              <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+              Connect Gmail Account
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-4">
+    <div class="card border-0 shadow mb-4">
+      <div class="card-header">
+        <h2 class="fs-5 fw-bold mb-0">How It Works</h2>
+      </div>
+      <div class="card-body">
+        <ol class="mb-0">
+          <li class="mb-2">Click <strong>Connect Gmail Account</strong> to authorize access</li>
+          <li class="mb-2">Google will ask for permission to read your emails</li>
+          <li class="mb-2">After authorization, click <strong>Sync Now</strong> to import contacts</li>
+          <li class="mb-2">Visit <a href="/gmail/contacts">Contact List</a> to see your email contacts and interaction levels</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,157 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Business Card Upload {% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+      <li class="breadcrumb-item"><a href="/index"><svg class="icon icon-xxs" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg></a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('namecard_blueprint.cards') }}">Business Cards</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Upload</li>
+    </ol>
+  </nav>
+  <div class="d-flex justify-content-between w-100 flex-wrap">
+    <div class="mb-3 mb-lg-0">
+      <h1 class="h4">Business Card Upload</h1>
+      <p class="mb-0">Upload a business card image to extract contact info and generate an email draft.</p>
+    </div>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row">
+  <!-- Upload Section -->
+  {% if not card %}
+  <div class="col-12">
+    <div class="card border-0 shadow mb-4">
+      <div class="card-header">
+        <h2 class="fs-5 fw-bold mb-0">Upload Business Card</h2>
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('namecard_blueprint.upload') }}" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="file" class="form-label">Business Card Image</label>
+            <input type="file" class="form-control" id="file" name="file" accept="image/*" required>
+            <div class="form-text">Accepted formats: PNG, JPG, JPEG, GIF, BMP, TIFF</div>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <svg class="icon icon-xs me-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+            Upload & Process
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Results Section (shown after upload) -->
+  {% if card %}
+  <div class="col-12 col-lg-5">
+    <div class="card border-0 shadow mb-4">
+      <div class="card-header">
+        <h2 class="fs-5 fw-bold mb-0">Card Image</h2>
+      </div>
+      <div class="card-body text-center">
+        <img src="{{ url_for('namecard_blueprint.serve_image', card_id=card.id) }}" class="img-fluid rounded" alt="Business Card" style="max-height: 400px;">
+        <p class="text-muted mt-2 small">{{ card.original_filename }}</p>
+      </div>
+    </div>
+
+    <!-- OCR Text -->
+    <div class="card border-0 shadow mb-4">
+      <div class="card-header">
+        <h2 class="fs-5 fw-bold mb-0">OCR Text</h2>
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('namecard_blueprint.extract') }}">
+          <input type="hidden" name="card_id" value="{{ card.id }}">
+          <textarea name="ocr_text" class="form-control mb-3" rows="8">{{ ocr_text }}</textarea>
+          <button type="submit" class="btn btn-sm btn-outline-primary">Re-extract with Edited Text</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-7">
+    <!-- Extracted Fields (editable) -->
+    <div class="card border-0 shadow mb-4">
+      <div class="card-header">
+        <h2 class="fs-5 fw-bold mb-0">Extracted Information</h2>
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('namecard_blueprint.draft') }}">
+          <input type="hidden" name="card_id" value="{{ card.id }}">
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Name</label>
+              <input type="text" name="name" class="form-control" value="{{ extracted.get('name', '') or '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Title</label>
+              <input type="text" name="title" class="form-control" value="{{ extracted.get('title', '') or '' }}">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Company</label>
+              <input type="text" name="company" class="form-control" value="{{ extracted.get('company', '') or '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Email</label>
+              <input type="email" name="email" class="form-control" value="{{ extracted.get('email', '') or '' }}">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Phone</label>
+              <input type="text" name="phone" class="form-control" value="{{ extracted.get('phone', '') or '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Website</label>
+              <input type="text" name="website" class="form-control" value="{{ extracted.get('website', '') or '' }}">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Address</label>
+            <input type="text" name="address" class="form-control" value="{{ extracted.get('address', '') or '' }}">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Notes</label>
+            <input type="text" name="notes" class="form-control" value="{{ extracted.get('notes', '') or '' }}">
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Your Message / Prompt</label>
+            <textarea name="user_prompt" class="form-control" rows="3" placeholder="e.g. We met at the medical expo in Taipei. I'd like to introduce our rehabilitation solutions..."></textarea>
+            <div class="form-text">Describe how you met, what you want to tell them, etc. This helps generate a better email draft.</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            <svg class="icon icon-xs me-1" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
+            Generate Email Draft
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock content %}

@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 from apps import db
-from apps.home import blueprint
+from apps.webgames import blueprint
 from flask import render_template, request,send_file
 from flask_login import login_required
 from jinja2 import TemplateNotFound

@@ -1,0 +1,140 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Business Cards {% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+      <li class="breadcrumb-item"><a href="/index"><svg class="icon icon-xxs" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg></a></li>
+      <li class="breadcrumb-item"><a href="#">Business Cards</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Card History</li>
+    </ol>
+  </nav>
+  <div class="d-flex justify-content-between w-100 flex-wrap">
+    <div class="mb-3 mb-lg-0">
+      <h1 class="h4">Business Card History</h1>
+      <p class="mb-0">All uploaded business cards and their processing status.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('namecard_blueprint.upload') }}" class="btn btn-sm btn-primary">
+        <svg class="icon icon-xs me-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+        Upload New Card
+      </a>
+    </div>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="card border-0 shadow">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-centered table-hover mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th class="border-0">#</th>
+            <th class="border-0">File</th>
+            <th class="border-0">Name</th>
+            <th class="border-0">Company</th>
+            <th class="border-0">Email</th>
+            <th class="border-0">Status</th>
+            <th class="border-0">Date</th>
+            <th class="border-0">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for card in cards %}
+          {% set extracted = card.extracted_json | default('{}') %}
+          {% if extracted and extracted != '{}' %}
+            {% set info = extracted | tojson if extracted is mapping else extracted %}
+          {% endif %}
+          <tr>
+            <td>{{ loop.index + (pagination.page - 1) * pagination.per_page }}</td>
+            <td>{{ card.original_filename or 'N/A' }}</td>
+            <td>
+              {% if card.extracted_json %}
+                {% set data = card.extracted_json %}
+                {{ (data | from_json).get('name', '-') if data else '-' }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>
+              {% if card.extracted_json %}
+                {% set data = card.extracted_json %}
+                {{ (data | from_json).get('company', '-') if data else '-' }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>
+              {% if card.extracted_json %}
+                {% set data = card.extracted_json %}
+                {{ (data | from_json).get('email', '-') if data else '-' }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>
+              {% if card.status == 'extracted' %}
+                <span class="badge bg-success">Extracted</span>
+              {% elif card.status == 'ocr_done' %}
+                <span class="badge bg-info">OCR Done</span>
+              {% elif card.status == 'uploaded' %}
+                <span class="badge bg-warning">Uploaded</span>
+              {% else %}
+                <span class="badge bg-danger">{{ card.status }}</span>
+              {% endif %}
+            </td>
+            <td>{{ card.created_at.strftime('%Y-%m-%d') if card.created_at else '-' }}</td>
+            <td>
+              <a href="{{ url_for('namecard_blueprint.card_detail', card_id=card.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+            </td>
+          </tr>
+          {% endfor %}
+          {% if not cards %}
+          <tr>
+            <td colspan="8" class="text-center py-4 text-muted">
+              No business cards uploaded yet.
+              <a href="{{ url_for('namecard_blueprint.upload') }}">Upload your first card</a>.
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <nav class="mt-4">
+      <ul class="pagination justify-content-center">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('namecard_blueprint.cards', page=pagination.prev_num) }}">Previous</a>
+        </li>
+        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if p %}
+            <li class="page-item {% if p == pagination.page %}active{% endif %}">
+              <a class="page-link" href="{{ url_for('namecard_blueprint.cards', page=p) }}">{{ p }}</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+          {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('namecard_blueprint.cards', page=pagination.next_num) }}">Next</a>
+        </li>
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}
